@@ -1,8 +1,11 @@
 package com.example.kitago
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.activity.ComponentActivity
+import com.example.kitago.R
 
 class LoginActivity : ComponentActivity() {
 
@@ -12,6 +15,11 @@ class LoginActivity : ComponentActivity() {
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
             finish()
+        }
+
+        findViewById<TextView>(R.id.tvRegisterNow).setOnClickListener {
+            val intent = Intent(this, SignupActivity::class.java)
+            startActivity(intent)
         }
     }
 }

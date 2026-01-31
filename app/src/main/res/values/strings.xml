@@ -1,5 +1,4 @@
 <resources>
-
     <string name="app_name">Kitago</string>
 
     <!-- Main menu -->
@@ -10,16 +9,23 @@
 
     <!-- Common -->
     <string name="back">Back</string>
+    <string name="google">Google</string>
+    <string name="facebook">Facebook</string>
 
     <!-- Login -->
     <string name="login_subtitle">LOGIN TO YOUR ACCOUNT</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="sign_in">Sign In</string>
-    <string name="register_now">Don\'t have an account yet? Register now</string>
+    <string name="register_here">DON\'T HAVE AN ACCOUNT?\nREGISTER HERE.</string>
+    <string name="or_sign_in_using">OR SIGN IN USING</string>
 
     <!-- Signup -->
     <string name="sign_up">Sign Up</string>
-    <string name="create_account">Create Account</string>
-
+    <string name="create_account">CREATE NEW ACCOUNT</string>
+    <string name="email_address">Email Address</string>
+    <string name="create_password">Create Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="already_have_account">ALREADY HAVE AN ACCOUNT?\nLOG IN HERE.</string>
+    <string name="or_sign_up_using">OR SIGN UP USING</string>
 </resources>

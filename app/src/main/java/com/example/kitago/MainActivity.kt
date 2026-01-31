@@ -1,5 +1,6 @@
 package com.example.kitago
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
 import androidx.activity.ComponentActivity
@@ -16,7 +17,8 @@ class MainActivity : ComponentActivity() {
         val btnExit = findViewById<ImageButton>(R.id.btnExit)
 
         btnStart.setOnClickListener {
-            // TODO: navigate to Login / Game
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
         }
 
         btnChallenges.setOnClickListener {
