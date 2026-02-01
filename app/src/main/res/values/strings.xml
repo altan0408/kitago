@@ -11,6 +11,11 @@
     <string name="back">Back</string>
     <string name="google">Google</string>
     <string name="facebook">Facebook</string>
+    <string name="save">SAVE</string>
+    <string name="create">CREATE</string>
+    <string name="join">JOIN</string>
+    <string name="username_placeholder">KURTY</string>
+    <string name="balance_placeholder">$1,250.00</string>
 
     <!-- Login -->
     <string name="login_subtitle">LOGIN TO YOUR ACCOUNT</string>
@@ -28,4 +33,67 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="already_have_account">ALREADY HAVE AN ACCOUNT?\nLOG IN HERE.</string>
     <string name="or_sign_up_using">OR SIGN UP USING</string>
+
+    <!-- Dashboard -->
+    <string name="home">Home</string>
+    <string name="goals">Goals</string>
+    <string name="add">Add</string>
+    <string name="profile">Profile</string>
+    <string name="current_balance">CURRENT BALANCE</string>
+    <string name="budget_hp">BUDGET HP</string>
+    <string name="savings_vault">SAVINGS VAULT</string>
+    <string name="challenge_preview_text">Cave Clash: 2nd Place</string>
+    <string name="user_avatar_description">User Avatar</string>
+
+    <!-- Goals -->
+    <string name="quest_log">QUEST LOG</string>
+    <string name="new_goal">+ NEW GOAL</string>
+    <string name="saved">SAVED</string>
+    <string name="target">TARGET</string>
+    <string name="time_remaining">TIME REMAINING</string>
+    <string name="reward_preview">REWARD PREVIEW</string>
+    <string name="goal_name_placeholder">NEW SWORD (PC)</string>
+    <string name="progress_40_percent">40% COMPLETE</string>
+
+    <!-- Goal Detail -->
+    <string name="saved_amount_placeholder">$300.00</string>
+    <string name="target_amount_placeholder">$400.00</string>
+    <string name="days_remaining_placeholder">12 DAYS</string>
+    <string name="progress_75_percent">75%</string>
+
+    <!-- Challenges -->
+    <string name="multiplayer_hub">MULTIPLAYER HUB</string>
+    <string name="active_challenges">ACTIVE CHALLENGES</string>
+    <string name="leaderboard">LEADERBOARD</string>
+    <string name="create_join_challenge">CREATE / JOIN CHALLENGE</string>
+    <string name="challenge_version_placeholder">CAVE CLASH v1.2</string>
+    <string name="rank_1">1.</string>
+    <string name="rank_2">2.</string>
+    <string name="player_1_name">ALEX_RPG</string>
+    <string name="player_1_progress">92%</string>
+    <string name="player_2_progress">85%</string>
+
+    <!-- Create/Join Challenge -->
+    <string name="challenge_type">CHALLENGE TYPE</string>
+    <string name="duration">DURATION</string>
+    <string name="invite_friends">INVITE FRIENDS</string>
+    <string name="challenge_hint">e.g. SAVING SPREE</string>
+    <string name="select_friends">SELECT FRIENDS</string>
+
+    <!-- Profile -->
+    <string name="badge_room">BADGE ROOM</string>
+    <string name="multiplayer_stats">MULTIPLAYER STATS</string>
+    <string name="level_placeholder">LEVEL 15</string>
+    <string name="wins_placeholder">WINS: 12</string>
+    <string name="streak_placeholder">STREAK: 5 DAYS</string>
+    <string name="user_large_avatar">User Large Avatar</string>
+    <string name="earned_badge">Earned Badge</string>
+    <string name="locked_badge">Locked Badge</string>
+
+    <!-- Add Transaction -->
+    <string name="amount_label">AMOUNT</string>
+    <string name="amount_hint">0.00</string>
+    <string name="category_food">FOOD</string>
+    <string name="category_travel">TRAVEL</string>
+    <string name="category_fun">FUN</string>
 </resources>

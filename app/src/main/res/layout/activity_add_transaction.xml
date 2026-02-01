@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- BACKGROUND -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/bg_cave"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
+
+    <!-- BACK BUTTON -->
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_media_previous"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- AMOUNT PLATE (Engraved Stone) -->
+    <LinearLayout
+        android:id="@+id/amountContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="80dp"
+        android:background="@drawable/bg_stone_tablet"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvAmountLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/press_start_2p"
+            android:text="@string/amount_label"
+            android:textColor="#333333"
+            android:textSize="10sp"
+            tools:ignore="SmallSp"
+            android:labelFor="@+id/etAmount" />
+
+        <EditText
+            android:id="@+id/etAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:fontFamily="@font/press_start_2p"
+            android:gravity="center"
+            android:hint="@string/amount_hint"
+            android:inputType="numberDecimal"
+            android:textColor="#000000"
+            android:textSize="32sp"
+            android:importantForAutofill="no" />
+    </LinearLayout>
+
+    <!-- CATEGORY GRID -->
+    <GridLayout
+        android:id="@+id/categoryGrid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="32dp"
+        android:columnCount="3"
+        android:rowCount="2"
+        app:layout_constraintTop_toBottomOf="@id/amountContainer">
+
+        <!-- Food -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+            <ImageButton
+                android:id="@+id/btnCategoryFood"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_panel"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:contentDescription="@string/category_food" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/press_start_2p"
+                android:text="@string/category_food"
+                android:textSize="8sp"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
+
+        <!-- Transport -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+            <ImageButton
+                android:id="@+id/btnCategoryTravel"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_panel"
+                android:src="@android:drawable/ic_menu_directions"
+                android:contentDescription="@string/category_travel" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/press_start_2p"
+                android:text="@string/category_travel"
+                android:textSize="8sp"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
+
+        <!-- Fun -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+            <ImageButton
+                android:id="@+id/btnCategoryFun"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_panel"
+                android:src="@android:drawable/btn_star_big_on"
+                android:contentDescription="@string/category_fun" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/press_start_2p"
+                android:text="@string/category_fun"
+                android:textSize="8sp"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
+        
+    </GridLayout>
+
+    <!-- SAVE BUTTON (Green Gem) -->
+    <TextView
+        android:id="@+id/btnSave"
+        android:layout_width="220dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="48dp"
+        android:background="@drawable/bg_button_green"
+        android:fontFamily="@font/press_start_2p"
+        android:text="@string/save"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

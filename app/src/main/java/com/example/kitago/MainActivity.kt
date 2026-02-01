@@ -2,7 +2,7 @@ package com.example.kitago
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ImageButton
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 
 class MainActivity : ComponentActivity() {
@@ -11,10 +11,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_menu)
 
-        val btnStart = findViewById<ImageButton>(R.id.btnStart)
-        val btnChallenges = findViewById<ImageButton>(R.id.btnChallenges)
-        val btnSettings = findViewById<ImageButton>(R.id.btnSettings)
-        val btnExit = findViewById<ImageButton>(R.id.btnExit)
+        val btnStart = findViewById<TextView>(R.id.btnStart)
+        val btnChallenges = findViewById<TextView>(R.id.btnChallenges)
+        val btnSettings = findViewById<TextView>(R.id.btnSettings)
+        val btnExit = findViewById<TextView>(R.id.btnExit)
 
         btnStart.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)

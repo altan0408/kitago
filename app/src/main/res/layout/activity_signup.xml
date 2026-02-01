@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- BACKGROUND -->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,35 +13,29 @@
         android:scaleType="centerCrop"
         android:contentDescription="@null" />
 
-    <!-- BACK BUTTON -->
     <ImageButton
         android:id="@+id/btnBack"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
-        android:layout_margin="12dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
         android:src="@android:drawable/ic_media_previous"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- SIGNUP PANEL -->
     <LinearLayout
         android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@drawable/bg_panel"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="32dp"
-        android:paddingBottom="32dp"
+        android:padding="24dp"
         android:gravity="center_horizontal"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- LOGO -->
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,7 +44,6 @@
             android:src="@drawable/logo_kitago_main"
             android:contentDescription="@null" />
 
-        <!-- SUBTITLE -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -61,7 +53,6 @@
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="24dp" />
 
-        <!-- USERNAME -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -87,7 +78,6 @@
             android:inputType="text"
             tools:ignore="SmallSp" />
 
-        <!-- EMAIL -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -113,7 +103,6 @@
             android:inputType="textEmailAddress"
             tools:ignore="SmallSp" />
 
-        <!-- PASSWORD -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -139,45 +128,20 @@
             android:importantForAutofill="no"
             tools:ignore="SmallSp" />
 
-        <!-- CONFIRM PASSWORD -->
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/confirm_password"
-            android:textAllCaps="true"
-            android:textColor="@color/text_dark"
-            android:textSize="10sp"
-            android:fontFamily="@font/press_start_2p"
-            android:layout_marginBottom="4dp"
-            android:labelFor="@+id/etConfirmPassword"
-            tools:ignore="SmallSp" />
-
-        <EditText
-            android:id="@+id/etConfirmPassword"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_input"
-            android:padding="8dp"
-            android:textSize="10sp"
-            android:textColor="@color/text_dark"
-            android:layout_marginBottom="20dp"
-            android:inputType="textPassword"
-            android:importantForAutofill="no"
-            tools:ignore="SmallSp" />
-
-        <!-- SIGN UP BUTTON -->
-        <Button
             android:id="@+id/btnSignUp"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:text="@string/sign_up"
+            android:gravity="center"
             android:textSize="14sp"
-            android:textColor="#FFFF"
+            android:textColor="#000000"
             android:fontFamily="@font/press_start_2p"
-            android:background="@drawable/bg_btn_signup"
-            android:layout_marginBottom="16dp" />
+            android:background="@drawable/bg_button_orange"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true" />
 
-        <!-- SOCIAL DIVIDER -->
         <View
             android:layout_width="200dp"
             android:layout_height="1dp"
@@ -202,20 +166,23 @@
             android:layout_marginBottom="24dp">
 
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:src="@android:drawable/ic_menu_search"
                 android:layout_marginEnd="16dp"
+                android:padding="8dp"
+                android:background="@drawable/bg_stone_tablet"
                 android:contentDescription="@string/google" />
 
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:src="@android:drawable/ic_menu_share"
+                android:padding="8dp"
+                android:background="@drawable/bg_stone_tablet"
                 android:contentDescription="@string/facebook" />
         </LinearLayout>
 
-        <!-- LOGIN LINK -->
         <TextView
             android:id="@+id/tvLoginHere"
             android:layout_width="wrap_content"

@@ -17,4 +17,10 @@
     <color name="text_dark">#2B2B2B</color>
     <color name="text_muted">#5A5A5A</color>
     <color name="link_teal">#1FA8A8</color>
+    
+    <!-- Game Theme Colors -->
+    <color name="hp_green">#4CAF50</color>
+    <color name="hp_red">#F44336</color>
+    <color name="vault_gold">#FFD700</color>
+    <color name="panel_bg">#CCFFE08A</color>
 </resources>
