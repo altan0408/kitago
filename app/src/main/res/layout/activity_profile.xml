@@ -135,7 +135,8 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_stone_tablet"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="20dp"
+                android:layout_marginBottom="24dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -165,6 +166,20 @@
                     android:textSize="12sp"
                     tools:ignore="SmallSp" />
             </LinearLayout>
+
+            <!-- SIGN OUT BUTTON -->
+            <TextView
+                android:id="@+id/btnSignOut"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_button_orange"
+                android:fontFamily="@font/press_start_2p"
+                android:gravity="center"
+                android:text="@string/sign_out"
+                android:textColor="#000000"
+                android:textSize="14sp"
+                android:clickable="true"
+                android:focusable="true" />
 
         </LinearLayout>
     </ScrollView>

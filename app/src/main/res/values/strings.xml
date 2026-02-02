@@ -14,8 +14,10 @@
     <string name="save">SAVE</string>
     <string name="create">CREATE</string>
     <string name="join">JOIN</string>
+    <string name="sign_out">SIGN OUT</string>
     <string name="username_placeholder">KURTY</string>
     <string name="balance_placeholder">$1,250.00</string>
+    <string name="ok">OK</string>
 
     <!-- Login -->
     <string name="login_subtitle">LOGIN TO YOUR ACCOUNT</string>
@@ -24,6 +26,9 @@
     <string name="sign_in">Sign In</string>
     <string name="register_here">DON\'T HAVE AN ACCOUNT?\nREGISTER HERE.</string>
     <string name="or_sign_in_using">OR SIGN IN USING</string>
+    <string name="error_invalid_credentials">WRONG CREDENTIALS!</string>
+    <string name="login_success_title">LOGIN SUCCESSFUL!</string>
+    <string name="login_success_msg">WELCOME BACK, ADVENTURER!\nYOUR TREASURE AWAITS.</string>
 
     <!-- Signup -->
     <string name="sign_up">Sign Up</string>
