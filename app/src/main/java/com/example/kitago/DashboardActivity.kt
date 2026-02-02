@@ -14,6 +14,9 @@ class DashboardActivity : ComponentActivity() {
     }
 
     private fun setupNavigation() {
+        findViewById<ImageButton>(R.id.navHome).setOnClickListener {
+            // Already on Home
+        }
         findViewById<ImageButton>(R.id.navGoals).setOnClickListener {
             startActivity(Intent(this, GoalsActivity::class.java))
         }

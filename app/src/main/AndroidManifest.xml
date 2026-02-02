@@ -19,6 +19,14 @@
 
         <activity android:name=".LoginActivity" />
         <activity android:name=".SignupActivity" />
+        <activity android:name=".MainMenuActivity" />
+        <activity android:name=".DashboardActivity" />
+        <activity android:name=".GoalsActivity" />
+        <activity android:name=".GoalDetailActivity" />
+        <activity android:name=".ChallengesActivity" />
+        <activity android:name=".AddTransactionActivity" />
+        <activity android:name=".CreateJoinChallengeActivity" />
+        <activity android:name=".ProfileActivity" />
 
     </application>
 
