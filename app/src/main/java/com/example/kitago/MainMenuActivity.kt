@@ -23,6 +23,12 @@ class MainMenuActivity : ComponentActivity() {
             startActivity(intent)
         }
 
+        // SETTINGS -> SETTINGS SCREEN
+        findViewById<TextView>(R.id.btnSettings).setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+        }
+
         // EXIT
         findViewById<TextView>(R.id.btnExit).setOnClickListener {
             finish()

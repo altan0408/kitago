@@ -47,8 +47,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Sample Goal 1 -->
+            <!-- Seamless Sample Goal -->
             <LinearLayout
+                android:id="@+id/sampleGoalItem"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -67,12 +68,13 @@
                     android:textSize="10sp"
                     tools:ignore="SmallSp" />
 
+                <!-- 75% progress to match detail -->
                 <ProgressBar
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="16dp"
                     android:layout_marginTop="8dp"
-                    android:progress="40"
+                    android:progress="75"
                     android:progressDrawable="@drawable/bg_xp_bar" />
 
                 <TextView
@@ -80,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/press_start_2p"
-                    android:text="@string/progress_40_percent"
+                    android:text="@string/progress_75_percent_complete"
                     android:textColor="@color/text_muted"
                     android:textSize="8sp"
                     tools:ignore="SmallSp" />

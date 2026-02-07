@@ -3,6 +3,7 @@ package com.example.kitago
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 
@@ -13,7 +14,13 @@ class GoalsActivity : ComponentActivity() {
 
         setupNavigation()
 
+        // NEW GOAL BUTTON -> CREATE GOAL SCREEN
         findViewById<TextView>(R.id.btnNewGoal).setOnClickListener {
+            startActivity(Intent(this, CreateGoalActivity::class.java))
+        }
+
+        // EXISTING GOAL ITEM -> GOAL DETAIL SCREEN
+        findViewById<LinearLayout>(R.id.sampleGoalItem).setOnClickListener {
             startActivity(Intent(this, GoalDetailActivity::class.java))
         }
     }

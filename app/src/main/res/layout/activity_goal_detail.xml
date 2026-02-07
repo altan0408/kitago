@@ -26,17 +26,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- CRYSTAL ORB PROGRESS (Placeholder circular progress) -->
-    <FrameLayout
-        android:id="@+id/orbContainer"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
-        android:layout_marginTop="60dp"
+    <!-- GOAL TITLE -->
+    <TextView
+        android:id="@+id/tvGoalDetailTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/press_start_2p"
+        android:text="QUEST DETAIL"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:shadowColor="#000000"
+        android:shadowDx="3"
+        android:shadowDy="3"
+        android:shadowRadius="1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- External Glow -->
+    <!-- CRYSTAL ORB PROGRESS -->
+    <FrameLayout
+        android:id="@+id/orbContainer"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvGoalDetailTitle">
+
+        <!-- Outer Glow -->
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -45,13 +63,12 @@
 
         <ProgressBar
             android:id="@+id/goalOrbProgress"
-            style="?android:attr/progressBarStyleLarge"
+            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:indeterminate="false"
-            android:max="100"
             android:progress="75"
-            android:progressDrawable="@android:drawable/progress_horizontal" />
+            android:max="100"
+            android:progressDrawable="@drawable/bg_orb_progress" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -60,7 +77,11 @@
             android:fontFamily="@font/press_start_2p"
             android:text="@string/progress_75_percent"
             android:textColor="@color/white"
-            android:textSize="24sp" />
+            android:textSize="28sp"
+            android:shadowColor="#000000"
+            android:shadowDx="3"
+            android:shadowDy="3"
+            android:shadowRadius="1" />
     </FrameLayout>
 
     <!-- GOAL STATS PANEL -->
@@ -71,7 +92,7 @@
         android:layout_marginTop="32dp"
         android:background="@drawable/bg_panel"
         android:orientation="vertical"
-        android:padding="20dp"
+        android:padding="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/orbContainer">
@@ -88,11 +109,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="20dp"
             android:fontFamily="@font/press_start_2p"
             android:text="@string/saved_amount_placeholder"
             android:textColor="@color/hp_green"
-            android:textSize="18sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -106,11 +127,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="20dp"
             android:fontFamily="@font/press_start_2p"
             android:text="@string/target_amount_placeholder"
-            android:textColor="@color/gold_dark"
-            android:textSize="18sp" />
+            android:textColor="#8B4513"
+            android:textSize="20sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -127,7 +148,7 @@
             android:fontFamily="@font/press_start_2p"
             android:text="@string/days_remaining_placeholder"
             android:textColor="@color/text_dark"
-            android:textSize="14sp" />
+            android:textSize="16sp" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

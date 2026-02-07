@@ -83,6 +83,7 @@
             android:padding="10dp"
             android:textSize="12sp"
             android:textColor="@color/text_dark"
+            android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="16dp"
             android:importantForAutofill="no"
             android:inputType="text" />
@@ -108,6 +109,7 @@
             android:padding="10dp"
             android:textSize="12sp"
             android:textColor="@color/text_dark"
+            android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="28dp"
             android:inputType="textPassword"
             android:importantForAutofill="no" />
@@ -160,7 +162,9 @@
                 android:layout_marginEnd="20dp"
                 android:padding="10dp"
                 android:background="@drawable/bg_stone_tablet"
-                android:contentDescription="@string/google" />
+                android:contentDescription="@string/google"
+                android:id="@+id/ivGoogleLogin"
+                android:tint="#EA4335" />
 
             <ImageView
                 android:layout_width="44dp"
@@ -168,7 +172,9 @@
                 android:src="@android:drawable/ic_menu_share"
                 android:padding="10dp"
                 android:background="@drawable/bg_stone_tablet"
-                android:contentDescription="@string/facebook" />
+                android:contentDescription="@string/facebook"
+                android:id="@+id/ivFacebookLogin"
+                android:tint="#1877F2" />
         </LinearLayout>
 
         <!-- REGISTER LINK -->

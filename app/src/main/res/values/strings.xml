@@ -49,6 +49,9 @@
     <string name="savings_vault">SAVINGS VAULT</string>
     <string name="challenge_preview_text">Cave Clash: 2nd Place</string>
     <string name="user_avatar_description">User Avatar</string>
+    <string name="active_quests_header">ACTIVE QUESTS</string>
+    <string name="live_challenges_header">LIVE CHALLENGES</string>
+    <string name="view_all">VIEW ALL</string>
 
     <!-- Goals -->
     <string name="quest_log">QUEST LOG</string>
@@ -58,7 +61,7 @@
     <string name="time_remaining">TIME REMAINING</string>
     <string name="reward_preview">REWARD PREVIEW</string>
     <string name="goal_name_placeholder">NEW SWORD (PC)</string>
-    <string name="progress_40_percent">40% COMPLETE</string>
+    <string name="progress_75_percent_complete">75% COMPLETE</string>
 
     <!-- Goal Detail -->
     <string name="saved_amount_placeholder">$300.00</string>
@@ -101,4 +104,21 @@
     <string name="category_food">FOOD</string>
     <string name="category_travel">TRAVEL</string>
     <string name="category_fun">FUN</string>
+    <string name="category_health">HEALTH</string>
+    <string name="category_edu">STUDY</string>
+    <string name="category_shop">SHOP</string>
+    <string name="note_label">NOTE</string>
+    <string name="note_hint">Add details...</string>
+
+    <!-- Settings -->
+    <string name="audio">AUDIO</string>
+    <string name="music">MUSIC</string>
+    <string name="sfx">SFX</string>
+    <string name="system">SYSTEM</string>
+    <string name="alerts">ALERTS</string>
+    <string name="language">LANGUAGE</string>
+    <string name="data_management">DATA MANAGEMENT</string>
+    <string name="reset_progress">RESET PROGRESS</string>
+    <string name="credits">CREDITS</string>
+    <string name="version">VERSION 1.0</string>
 </resources>

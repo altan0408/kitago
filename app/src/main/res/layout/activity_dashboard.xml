@@ -45,6 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/username_placeholder"
+                tools:text="KURTY"
                 android:textColor="@color/white"
                 android:textSize="14sp"
                 android:fontFamily="@font/press_start_2p"
@@ -101,6 +102,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/current_balance"
+                    tools:text="CURRENT BALANCE"
                     android:textSize="10sp"
                     android:fontFamily="@font/press_start_2p"
                     android:textColor="#333333"
@@ -112,17 +114,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/balance_placeholder"
+                    tools:text="$1,250.00"
                     android:textSize="24sp"
                     android:fontFamily="@font/press_start_2p"
                     android:textColor="#000000"
                     android:layout_marginTop="8dp" />
             </LinearLayout>
 
-            <!-- BUDGET HP -->
+            <!-- BUDGET HP SECTION -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/budget_hp"
+                tools:text="BUDGET HP"
                 android:textSize="12sp"
                 android:fontFamily="@font/press_start_2p"
                 android:textColor="@color/white"
@@ -142,57 +146,121 @@
                 android:progressDrawable="@drawable/bg_hp_bar"
                 android:layout_marginBottom="28dp" />
 
-            <!-- SAVINGS VAULT -->
+            <!-- ACTIVE QUESTS PREVIEW -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/bg_stone_tablet"
-                android:padding="20dp"
                 android:layout_marginBottom="24dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/savings_vault"
-                    android:textSize="10sp"
-                    android:fontFamily="@font/press_start_2p"
-                    android:textColor="#333333"
-                    tools:ignore="SmallSp" />
-
-                <ProgressBar
-                    style="?android:attr/progressBarStyleHorizontal"
+                
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:progress="45"
-                    android:progressDrawable="@drawable/bg_xp_bar"
-                    android:layout_marginTop="12dp" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/active_quests_header"
+                        tools:text="ACTIVE QUESTS"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/press_start_2p"
+                        android:textColor="@color/white"
+                        android:shadowColor="#000000"
+                        android:shadowDx="3"
+                        android:shadowDy="3"
+                        android:shadowRadius="1"
+                        tools:ignore="SmallSp" />
+                    <TextView
+                        android:id="@+id/tvViewAllGoals"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:text="@string/view_all"
+                        tools:text="VIEW ALL"
+                        android:textSize="8sp"
+                        android:fontFamily="@font/press_start_2p"
+                        android:textColor="@color/gold_light"
+                        tools:ignore="SmallSp"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:id="@+id/goalPreviewItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_panel"
+                    android:padding="20dp"
+                    android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/goal_name_placeholder"
+                        tools:text="NEW SWORD (PC)"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/press_start_2p"
+                        android:textColor="@color/text_dark"
+                        tools:ignore="SmallSp" />
+                    <ProgressBar
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="16dp"
+                        android:progress="75"
+                        android:progressDrawable="@drawable/bg_xp_bar"
+                        android:layout_marginTop="12dp" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- CHALLENGE PREVIEW -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_panel"
-                android:padding="20dp"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@android:drawable/btn_star_big_on"
-                    android:contentDescription="@null" />
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/challenge_preview_text"
-                    android:textSize="10sp"
+                    android:text="@string/live_challenges_header"
+                    tools:text="LIVE CHALLENGES"
+                    android:textSize="12sp"
                     android:fontFamily="@font/press_start_2p"
-                    android:textColor="#000000"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="12dp"
+                    android:shadowColor="#000000"
+                    android:shadowDx="3"
+                    android:shadowDy="3"
+                    android:shadowRadius="1"
                     tools:ignore="SmallSp" />
+
+                <LinearLayout
+                    android:id="@+id/challengePreviewItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_stone_tablet"
+                    android:padding="20dp"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@android:drawable/btn_star_big_on"
+                        android:contentDescription="@null" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/challenge_preview_text"
+                        tools:text="Cave Clash: 2nd Place"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/press_start_2p"
+                        android:textColor="#000000"
+                        tools:ignore="SmallSp" />
+                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
