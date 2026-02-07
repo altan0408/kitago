@@ -3,6 +3,7 @@ package com.example.kitago
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
@@ -30,22 +31,22 @@ class LoginActivity : ComponentActivity() {
             val pass = etPassword.text.toString()
 
             if (user == "test1" && pass == "12345678") {
-                // SUCCESS DIALOG
-                AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.login_success_title))
-                    .setMessage(getString(R.string.login_success_msg))
-                    .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                        val intent = Intent(this, DashboardActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
-                    .setCancelable(false)
-                    .show()
+                showGameDialog(
+                    getString(R.string.login_success_title),
+                    getString(R.string.login_success_msg)
+                ) {
+                    val intent = Intent(this, DashboardActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
             } else {
-                // WRONG CREDENTIALS
-                Toast.makeText(this, getString(R.string.error_invalid_credentials), Toast.LENGTH_SHORT).show()
-                etUsername.text.clear()
-                etPassword.text.clear()
+                showGameDialog(
+                    "LOGIN FAILED",
+                    getString(R.string.error_invalid_credentials)
+                ) {
+                    etUsername.text.clear()
+                    etPassword.text.clear()
+                }
             }
         }
 
@@ -54,5 +55,23 @@ class LoginActivity : ComponentActivity() {
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    private fun showGameDialog(title: String, message: String, onOk: () -> Unit) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = title
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = message
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener {
+            dialog.dismiss()
+            onOk()
+        }
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
     }
 }

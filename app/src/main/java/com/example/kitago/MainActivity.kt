@@ -11,25 +11,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_menu)
 
-        val btnStart = findViewById<TextView>(R.id.btnStart)
-        val btnChallenges = findViewById<TextView>(R.id.btnChallenges)
-        val btnSettings = findViewById<TextView>(R.id.btnSettings)
-        val btnExit = findViewById<TextView>(R.id.btnExit)
-
-        btnStart.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+        // START -> LOGIN
+        findViewById<TextView>(R.id.btnStart).setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
         }
 
-        btnChallenges.setOnClickListener {
-            // TODO: navigate to Challenges
+        // CHALLENGES -> CHALLENGES HUB
+        findViewById<TextView>(R.id.btnChallenges).setOnClickListener {
+            startActivity(Intent(this, ChallengesActivity::class.java))
         }
 
-        btnSettings.setOnClickListener {
-            // TODO: open Settings
+        // SETTINGS -> SETTINGS SCREEN
+        findViewById<TextView>(R.id.btnSettings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        btnExit.setOnClickListener {
+        // EXIT
+        findViewById<TextView>(R.id.btnExit).setOnClickListener {
             finish()
         }
     }
