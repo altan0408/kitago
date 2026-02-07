@@ -2,22 +2,36 @@ package com.example.kitago
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ImageButton
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 
 class MainMenuActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // IMPORTANT
         setContentView(R.layout.activity_main_menu)
 
-        val btnStart = findViewById<ImageButton>(R.id.btnStart)
-
-        btnStart.setOnClickListener {
+        // START -> LOGIN
+        findViewById<TextView>(R.id.btnStart).setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
+        }
+
+        // CHALLENGES -> CHALLENGES HUB
+        findViewById<TextView>(R.id.btnChallenges).setOnClickListener {
+            val intent = Intent(this, ChallengesActivity::class.java)
+            startActivity(intent)
+        }
+
+        // SETTINGS -> SETTINGS SCREEN
+        findViewById<TextView>(R.id.btnSettings).setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+        }
+
+        // EXIT
+        findViewById<TextView>(R.id.btnExit).setOnClickListener {
+            finish()
         }
     }
 }

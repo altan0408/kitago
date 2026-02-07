@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.KitagoMobileGame" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Custom styles -->
+        <item name="android:statusBarColor">#000000</item>
+    </style>
 
-    <style name="Theme.KitagoMobileGame" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="CircleImage" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

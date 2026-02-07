@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_panel"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvDialogTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/press_start_2p"
+        android:text="MESSAGE"
+        android:textColor="@color/text_dark"
+        android:textSize="16sp"
+        android:shadowColor="#44000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="1"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/tvDialogMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/press_start_2p"
+        android:gravity="center"
+        android:text="Your message goes here."
+        android:textColor="#333333"
+        android:textSize="10sp"
+        android:lineSpacingExtra="4dp"
+        android:layout_marginBottom="24dp"
+        tools:ignore="SmallSp" />
+
+    <TextView
+        android:id="@+id/btnDialogOk"
+        android:layout_width="160dp"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_button_gold"
+        android:fontFamily="@font/press_start_2p"
+        android:gravity="center"
+        android:text="@string/ok"
+        android:textColor="#000000"
+        android:textSize="12sp"
+        android:clickable="true"
+        android:focusable="true"
+        tools:ignore="SmallSp" />
+
+</LinearLayout>
