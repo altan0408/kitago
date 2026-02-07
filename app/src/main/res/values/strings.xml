@@ -18,6 +18,7 @@
     <string name="username_placeholder">KURTY</string>
     <string name="balance_placeholder">$1,250.00</string>
     <string name="ok">OK</string>
+    <string name="view_all">VIEW ALL</string>
 
     <!-- Login -->
     <string name="login_subtitle">LOGIN TO YOUR ACCOUNT</string>
@@ -51,7 +52,6 @@
     <string name="user_avatar_description">User Avatar</string>
     <string name="active_quests_header">ACTIVE QUESTS</string>
     <string name="live_challenges_header">LIVE CHALLENGES</string>
-    <string name="view_all">VIEW ALL</string>
 
     <!-- Goals -->
     <string name="quest_log">QUEST LOG</string>
@@ -62,12 +62,17 @@
     <string name="reward_preview">REWARD PREVIEW</string>
     <string name="goal_name_placeholder">NEW SWORD (PC)</string>
     <string name="progress_75_percent_complete">75% COMPLETE</string>
-
-    <!-- Goal Detail -->
+    <string name="new_quest">NEW QUEST</string>
+    <string name="goal_name">GOAL NAME</string>
+    <string name="target_gold">TARGET GOLD</string>
+    <string name="deadline">DEADLINE</string>
+    <string name="select_date">SELECT DATE</string>
+    <string name="start_quest">START QUEST</string>
+    <string name="quest_detail">QUEST DETAIL</string>
+    <string name="progress_75_percent">75%</string>
     <string name="saved_amount_placeholder">$300.00</string>
     <string name="target_amount_placeholder">$400.00</string>
     <string name="days_remaining_placeholder">12 DAYS</string>
-    <string name="progress_75_percent">75%</string>
 
     <!-- Challenges -->
     <string name="multiplayer_hub">MULTIPLAYER HUB</string>
@@ -80,13 +85,11 @@
     <string name="player_1_name">ALEX_RPG</string>
     <string name="player_1_progress">92%</string>
     <string name="player_2_progress">85%</string>
-
-    <!-- Create/Join Challenge -->
     <string name="challenge_type">CHALLENGE TYPE</string>
     <string name="duration">DURATION</string>
     <string name="invite_friends">INVITE FRIENDS</string>
-    <string name="challenge_hint">e.g. SAVING SPREE</string>
     <string name="select_friends">SELECT FRIENDS</string>
+    <string name="challenge_hint">e.g. SAVING SPREE</string>
 
     <!-- Profile -->
     <string name="badge_room">BADGE ROOM</string>
@@ -115,10 +118,15 @@
     <string name="music">MUSIC</string>
     <string name="sfx">SFX</string>
     <string name="system">SYSTEM</string>
-    <string name="alerts">ALERTS</string>
+    <string name="vibration">VIBRATION</string>
+    <string name="notifications">NOTIFICATIONS</string>
     <string name="language">LANGUAGE</string>
     <string name="data_management">DATA MANAGEMENT</string>
+    <string name="initial_gold">INITIAL GOLD</string>
     <string name="reset_progress">RESET PROGRESS</string>
     <string name="credits">CREDITS</string>
     <string name="version">VERSION 1.0</string>
+    <string name="account">ACCOUNT</string>
+    <string name="change_username">CHANGE USERNAME</string>
+    <string name="alerts">ALERTS</string>
 </resources>
