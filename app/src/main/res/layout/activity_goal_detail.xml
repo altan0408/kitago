@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:fontFamily="@font/press_start_2p"
-        android:text="QUEST DETAIL"
+        android:text="@string/quest_detail"
         android:textColor="@color/white"
         android:textSize="20sp"
         android:shadowColor="#000000"
@@ -130,7 +130,7 @@
             android:layout_marginBottom="20dp"
             android:fontFamily="@font/press_start_2p"
             android:text="@string/target_amount_placeholder"
-            android:textColor="#8B4513"
+            android:textColor="@color/hp_red"
             android:textSize="20sp" />
 
         <TextView

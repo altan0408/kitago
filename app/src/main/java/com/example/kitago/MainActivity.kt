@@ -1,5 +1,7 @@
 package com.example.kitago
 
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
@@ -7,9 +9,14 @@ import androidx.activity.ComponentActivity
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var database: DatabaseReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_menu)
+
+        // Initialize Firebase
+        database = FirebaseDatabase.getInstance().reference
 
         // START -> LOGIN
         findViewById<TextView>(R.id.btnStart).setOnClickListener {
