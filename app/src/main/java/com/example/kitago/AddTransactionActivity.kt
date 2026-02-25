@@ -22,11 +22,16 @@ class AddTransactionActivity : ComponentActivity() {
             val amountStr = etAmount.text.toString()
             if (amountStr.isNotEmpty()) {
                 val amount = amountStr.toDouble()
-                // Update persistent balance (deducting gold)
-                DataManager.updateBalance(this, amount, isIncome = false)
                 
-                Toast.makeText(this, "QUEST UPDATED: GOLD SPENT!", Toast.LENGTH_SHORT).show()
-                finish()
+                // Deduct balance in Firebase
+                DataManager.syncUpdateBalance(amount, isIncome = false) { success ->
+                    if (success) {
+                        Toast.makeText(this, "QUEST UPDATED: GOLD SPENT!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    } else {
+                        Toast.makeText(this, "FAILED TO UPDATE VAULT", Toast.LENGTH_SHORT).show()
+                    }
+                }
             } else {
                 Toast.makeText(this, "ENTER AMOUNT!", Toast.LENGTH_SHORT).show()
             }

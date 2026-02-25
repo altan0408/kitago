@@ -71,6 +71,7 @@
             android:progressDrawable="@drawable/bg_orb_progress" />
 
         <TextView
+            android:id="@+id/tvOrbPercent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -107,6 +108,7 @@
             tools:ignore="SmallSp" />
 
         <TextView
+            android:id="@+id/tvSavedAmount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
@@ -125,6 +127,7 @@
             tools:ignore="SmallSp" />
 
         <TextView
+            android:id="@+id/tvTargetAmount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
@@ -143,6 +146,7 @@
             tools:ignore="SmallSp" />
 
         <TextView
+            android:id="@+id/tvDeadline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/press_start_2p"

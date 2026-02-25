@@ -44,8 +44,7 @@
                 android:id="@+id/tvUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/username_placeholder"
-                tools:text="KURTY"
+                android:text="ADVENTURER"
                 android:textColor="@color/white"
                 android:textSize="14sp"
                 android:fontFamily="@font/press_start_2p"
@@ -102,7 +101,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/current_balance"
-                    tools:text="CURRENT BALANCE"
                     android:textSize="10sp"
                     android:fontFamily="@font/press_start_2p"
                     android:textColor="#333333"
@@ -113,8 +111,7 @@
                     android:id="@+id/tvBalance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/balance_placeholder"
-                    tools:text="$1,250.00"
+                    android:text="₱0.00"
                     android:textSize="24sp"
                     android:fontFamily="@font/press_start_2p"
                     android:textColor="#000000"
@@ -126,7 +123,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/budget_hp"
-                tools:text="BUDGET HP"
                 android:textSize="12sp"
                 android:fontFamily="@font/press_start_2p"
                 android:textColor="@color/white"
@@ -142,7 +138,7 @@
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="36dp"
-                android:progress="80"
+                android:progress="100"
                 android:progressDrawable="@drawable/bg_hp_bar"
                 android:layout_marginBottom="28dp" />
 
@@ -161,7 +157,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/active_quests_header"
-                        tools:text="ACTIVE QUESTS"
                         android:textSize="12sp"
                         android:fontFamily="@font/press_start_2p"
                         android:textColor="@color/white"
@@ -176,7 +171,6 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:text="@string/view_all"
-                        tools:text="VIEW ALL"
                         android:textSize="8sp"
                         android:fontFamily="@font/press_start_2p"
                         android:textColor="@color/gold_light"
@@ -195,19 +189,20 @@
                     android:clickable="true"
                     android:focusable="true">
                     <TextView
+                        android:id="@+id/tvPreviewGoalName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/goal_name_placeholder"
-                        tools:text="NEW SWORD (PC)"
+                        android:text="NO ACTIVE QUESTS"
                         android:textSize="10sp"
                         android:fontFamily="@font/press_start_2p"
                         android:textColor="@color/text_dark"
                         tools:ignore="SmallSp" />
                     <ProgressBar
+                        android:id="@+id/previewGoalProgress"
                         style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="match_parent"
                         android:layout_height="16dp"
-                        android:progress="75"
+                        android:progress="0"
                         android:progressDrawable="@drawable/bg_xp_bar"
                         android:layout_marginTop="12dp" />
                 </LinearLayout>
@@ -224,7 +219,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/live_challenges_header"
-                    tools:text="LIVE CHALLENGES"
                     android:textSize="12sp"
                     android:fontFamily="@font/press_start_2p"
                     android:textColor="@color/white"
@@ -254,8 +248,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="@string/challenge_preview_text"
-                        tools:text="Cave Clash: 2nd Place"
+                        android:text="NO LIVE CHALLENGES"
                         android:textSize="10sp"
                         android:fontFamily="@font/press_start_2p"
                         android:textColor="#000000"
@@ -327,5 +320,4 @@
             app:tint="#000000" />
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
