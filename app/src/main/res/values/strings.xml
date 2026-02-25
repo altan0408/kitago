@@ -15,8 +15,8 @@
     <string name="create">CREATE</string>
     <string name="join">JOIN</string>
     <string name="sign_out">SIGN OUT</string>
-    <string name="username_placeholder">KURTY</string>
-    <string name="balance_placeholder">$1,250.00</string>
+    <string name="username_placeholder">ADVENTURER</string>
+    <string name="balance_placeholder">₱0.00</string>
     <string name="ok">OK</string>
     <string name="view_all">VIEW ALL</string>
 
@@ -48,7 +48,7 @@
     <string name="current_balance">CURRENT BALANCE</string>
     <string name="budget_hp">BUDGET HP</string>
     <string name="savings_vault">SAVINGS VAULT</string>
-    <string name="challenge_preview_text">Cave Clash: 2nd Place</string>
+    <string name="challenge_preview_text">No active challenges</string>
     <string name="user_avatar_description">User Avatar</string>
     <string name="active_quests_header">ACTIVE QUESTS</string>
     <string name="live_challenges_header">LIVE CHALLENGES</string>
@@ -60,8 +60,8 @@
     <string name="target">TARGET</string>
     <string name="time_remaining">TIME REMAINING</string>
     <string name="reward_preview">REWARD PREVIEW</string>
-    <string name="goal_name_placeholder">NEW SWORD (PC)</string>
-    <string name="progress_75_percent_complete">75% COMPLETE</string>
+    <string name="goal_name_placeholder">NO ACTIVE QUESTS</string>
+    <string name="progress_75_percent_complete">0% COMPLETE</string>
     <string name="new_quest">NEW QUEST</string>
     <string name="goal_name">GOAL NAME</string>
     <string name="target_gold">TARGET GOLD</string>
@@ -69,17 +69,17 @@
     <string name="select_date">SELECT DATE</string>
     <string name="start_quest">START QUEST</string>
     <string name="quest_detail">QUEST DETAIL</string>
-    <string name="progress_75_percent">75%</string>
-    <string name="saved_amount_placeholder">$300.00</string>
-    <string name="target_amount_placeholder">$400.00</string>
-    <string name="days_remaining_placeholder">12 DAYS</string>
+    <string name="progress_75_percent">0%</string>
+    <string name="saved_amount_placeholder">₱0.00</string>
+    <string name="target_amount_placeholder">₱0.00</string>
+    <string name="days_remaining_placeholder">---</string>
 
     <!-- Challenges -->
     <string name="multiplayer_hub">MULTIPLAYER HUB</string>
     <string name="active_challenges">ACTIVE CHALLENGES</string>
     <string name="leaderboard">LEADERBOARD</string>
     <string name="create_join_challenge">CREATE / JOIN CHALLENGE</string>
-    <string name="challenge_version_placeholder">CAVE CLASH v1.2</string>
+    <string name="challenge_version_placeholder">COMMING SOON</string>
     <string name="rank_1">1.</string>
     <string name="rank_2">2.</string>
     <string name="player_1_name">ALEX_RPG</string>
@@ -94,9 +94,9 @@
     <!-- Profile -->
     <string name="badge_room">BADGE ROOM</string>
     <string name="multiplayer_stats">MULTIPLAYER STATS</string>
-    <string name="level_placeholder">LEVEL 15</string>
-    <string name="wins_placeholder">WINS: 12</string>
-    <string name="streak_placeholder">STREAK: 5 DAYS</string>
+    <string name="level_placeholder">LEVEL 1</string>
+    <string name="wins_placeholder">WINS: 0</string>
+    <string name="streak_placeholder">STREAK: 0 DAYS</string>
     <string name="user_large_avatar">User Large Avatar</string>
     <string name="earned_badge">Earned Badge</string>
     <string name="locked_badge">Locked Badge</string>
@@ -129,4 +129,7 @@
     <string name="account">ACCOUNT</string>
     <string name="change_username">CHANGE USERNAME</string>
     <string name="alerts">ALERTS</string>
+
+    <!-- Firebase & Social -->
+    <string name="default_web_client_id">923109194344-50jv2b06kvbjvh3kd1e707e2lmujr45l.apps.googleusercontent.com</string>
 </resources>

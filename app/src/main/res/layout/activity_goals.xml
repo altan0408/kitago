@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- BACKGROUND -->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,7 +13,6 @@
         android:scaleType="centerCrop"
         android:contentDescription="@null" />
 
-    <!-- TOP BAR: QUEST LOG TITLE -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
@@ -32,7 +30,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- QUEST LIST (Scrollable) -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -43,55 +40,12 @@
         app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
         <LinearLayout
+            android:id="@+id/goalsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- Seamless Sample Goal -->
-            <LinearLayout
-                android:id="@+id/sampleGoalItem"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/bg_panel"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:clickable="true"
-                android:focusable="true">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/press_start_2p"
-                    android:text="@string/goal_name_placeholder"
-                    android:textColor="@color/text_dark"
-                    android:textSize="10sp"
-                    tools:ignore="SmallSp" />
-
-                <!-- 75% progress to match detail -->
-                <ProgressBar
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="16dp"
-                    android:layout_marginTop="8dp"
-                    android:progress="75"
-                    android:progressDrawable="@drawable/bg_xp_bar" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/press_start_2p"
-                    android:text="@string/progress_75_percent_complete"
-                    android:textColor="@color/text_muted"
-                    android:textSize="8sp"
-                    tools:ignore="SmallSp" />
-            </LinearLayout>
-
-        </LinearLayout>
+            android:orientation="vertical" />
     </ScrollView>
 
-    <!-- NEW GOAL BUTTON -->
     <TextView
         android:id="@+id/btnNewGoal"
         android:layout_width="220dp"
@@ -107,10 +61,8 @@
         android:focusable="true"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="SmallSp" />
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- BOTTOM NAV -->
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -171,5 +123,4 @@
             app:tint="#000000" />
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

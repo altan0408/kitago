@@ -53,18 +53,7 @@
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="24dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/username"
-            android:textAllCaps="true"
-            android:textColor="@color/text_dark"
-            android:textSize="10sp"
-            android:fontFamily="@font/press_start_2p"
-            android:layout_marginBottom="4dp"
-            android:labelFor="@+id/etUsername"
-            tools:ignore="SmallSp" />
-
+        <!-- USERNAME -->
         <EditText
             android:id="@+id/etUsername"
             android:layout_width="match_parent"
@@ -75,22 +64,10 @@
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="12dp"
-            android:importantForAutofill="no"
-            android:inputType="text"
-            tools:ignore="SmallSp" />
+            android:hint="@string/username"
+            android:inputType="text" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/email_address"
-            android:textAllCaps="true"
-            android:textColor="@color/text_dark"
-            android:textSize="10sp"
-            android:fontFamily="@font/press_start_2p"
-            android:layout_marginBottom="4dp"
-            android:labelFor="@+id/etEmail"
-            tools:ignore="SmallSp" />
-
+        <!-- EMAIL -->
         <EditText
             android:id="@+id/etEmail"
             android:layout_width="match_parent"
@@ -101,22 +78,10 @@
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="12dp"
-            android:importantForAutofill="no"
-            android:inputType="textEmailAddress"
-            tools:ignore="SmallSp" />
+            android:hint="@string/email_address"
+            android:inputType="textEmailAddress" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/create_password"
-            android:textAllCaps="true"
-            android:textColor="@color/text_dark"
-            android:textSize="10sp"
-            android:fontFamily="@font/press_start_2p"
-            android:layout_marginBottom="4dp"
-            android:labelFor="@+id/etPassword"
-            tools:ignore="SmallSp" />
-
+        <!-- PASSWORD -->
         <EditText
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
@@ -127,9 +92,22 @@
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="12dp"
-            android:inputType="textPassword"
-            android:importantForAutofill="no"
-            tools:ignore="SmallSp" />
+            android:hint="@string/password"
+            android:inputType="textPassword" />
+
+        <!-- CONFIRM PASSWORD -->
+        <EditText
+            android:id="@+id/etConfirmPassword"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_input"
+            android:padding="8dp"
+            android:textSize="10sp"
+            android:textColor="@color/text_dark"
+            android:fontFamily="@font/press_start_2p"
+            android:layout_marginBottom="12dp"
+            android:hint="@string/confirm_password"
+            android:inputType="textPassword" />
 
         <TextView
             android:id="@+id/btnSignUp"
@@ -140,16 +118,10 @@
             android:textSize="14sp"
             android:textColor="#000000"
             android:fontFamily="@font/press_start_2p"
-            android:background="@drawable/bg_button_orange"
+            android:background="@drawable/bg_btn_signup"
             android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true" />
-
-        <View
-            android:layout_width="200dp"
-            android:layout_height="1dp"
-            android:background="#55000000"
-            android:layout_marginTop="4dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -158,34 +130,23 @@
             android:textSize="8sp"
             android:textColor="@color/text_muted"
             android:fontFamily="@font/press_start_2p"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            tools:ignore="SmallSp" />
+            android:layout_marginBottom="8dp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="16dp">
 
             <ImageView
+                android:id="@+id/ivGoogleSignup"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:src="@android:drawable/ic_menu_search"
-                android:layout_marginEnd="20dp"
                 android:padding="10dp"
                 android:background="@drawable/bg_stone_tablet"
                 android:contentDescription="@string/google"
                 android:tint="#EA4335" />
-
-            <ImageView
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:src="@android:drawable/ic_menu_share"
-                android:padding="10dp"
-                android:background="@drawable/bg_stone_tablet"
-                android:contentDescription="@string/facebook"
-                android:tint="#1877F2" />
         </LinearLayout>
 
         <TextView
@@ -198,11 +159,7 @@
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
             android:clickable="true"
-            android:focusable="true"
-            android:lineSpacingExtra="4dp"
-            android:layout_gravity="center_horizontal"
-            tools:ignore="SmallSp" />
+            android:focusable="true" />
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

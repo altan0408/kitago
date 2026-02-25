@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "923109194344",
+    "firebase_url": "https://kitago-aee6a-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "kitago-aee6a",
+    "storage_bucket": "kitago-aee6a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923109194344:android:db784cf1a4b4d8c77219dd",
+        "android_client_info": {
+          "package_name": "com.example.kitago"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "923109194344-4qatu2280dec3iebeof4o81es46n8fec.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kitago",
+            "certificate_hash": "adafd4d0604171f21f8489fee809b9b4a4fca3ed"
+          }
+        },
+        {
+          "client_id": "923109194344-50jv2b06kvbjvh3kd1e707e2lmujr45l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJRL9Cv_ep4M4RRs-Lfh3sDKSmI-tsCLQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "923109194344-50jv2b06kvbjvh3kd1e707e2lmujr45l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
