@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="12dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/tvRank"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/press_start_2p"
+        android:text="1."
+        android:textColor="@color/gold_dark"
+        android:textSize="12sp"
+        tools:ignore="SmallSp" />
+
+    <ImageView
+        android:id="@+id/ivLeaderboardAvatar"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/logo_kitago_main"
+        android:background="@drawable/bg_button_gold"
+        android:padding="4dp"
+        android:contentDescription="@null" />
+
+    <TextView
+        android:id="@+id/tvLeaderboardName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:fontFamily="@font/press_start_2p"
+        android:text="PLAYER"
+        android:textColor="@color/text_dark"
+        android:textSize="10sp"
+        tools:ignore="SmallSp" />
+
+    <TextView
+        android:id="@+id/tvLeaderboardScore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/press_start_2p"
+        android:text="₱0"
+        android:textColor="@color/hp_green"
+        android:textSize="12sp"
+        tools:ignore="SmallSp" />
+
+</LinearLayout>
