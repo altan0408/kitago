@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- BACKGROUND -->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -13,14 +14,45 @@
         android:scaleType="centerCrop"
         android:contentDescription="@null" />
 
+    <!-- TOP BAR -->
+    <RelativeLayout
+        android:id="@+id/profileTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnBackProfile"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back" />
+
+        <TextView
+            android:id="@+id/tvProfileTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/press_start_2p"
+            android:text="PROFILE"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:shadowColor="#000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="1" />
+    </RelativeLayout>
+
+    <!-- TOP SECTION: AVATAR + NAME -->
     <LinearLayout
         android:id="@+id/avatarSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:layout_marginTop="40dp"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/profileTopBar">
 
         <FrameLayout
             android:layout_width="wrap_content"
@@ -29,13 +61,13 @@
                 android:id="@+id/ivLargeAvatar"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@android:drawable/ic_menu_myplaces"
+                android:src="@drawable/logo_kitago_main"
                 android:padding="6dp"
                 android:background="@drawable/bg_button_gold"
                 android:clickable="true"
-                android:focusable="true"
-                android:contentDescription="@string/user_large_avatar" />
+                android:focusable="true" />
             <ImageView
+                android:id="@+id/ivCameraIcon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="bottom|end"
@@ -50,7 +82,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="16dp">
             <TextView
                 android:id="@+id/tvUsernameProfile"
                 android:layout_width="wrap_content"
@@ -77,18 +109,19 @@
             android:id="@+id/tvEmailProfile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:fontFamily="@font/press_start_2p"
             android:text="---"
-            android:textColor="@color/gold_light"
-            android:textSize="8sp"
+            android:textColor="@color/white"
+            android:alpha="0.7"
+            android:textSize="7sp"
             tools:ignore="SmallSp" />
 
         <TextView
             android:id="@+id/tvLevel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:fontFamily="@font/press_start_2p"
             android:text="LEVEL 1"
             android:textColor="@color/gold_dark"
@@ -104,6 +137,7 @@
             android:progressDrawable="@drawable/bg_xp_bar" />
     </LinearLayout>
 
+    <!-- CONTENT SCROLL -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -120,10 +154,109 @@
             android:paddingHorizontal="24dp"
             android:paddingBottom="24dp">
 
+            <!-- PENDING REQUESTS -->
             <LinearLayout
+                android:id="@+id/requestsLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_stone_tablet"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/press_start_2p"
+                    android:text="PENDING REQUESTS"
+                    android:textColor="#333333"
+                    android:textSize="10sp"
+                    tools:ignore="SmallSp" />
+
+                <LinearLayout
+                    android:id="@+id/requestsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="12dp">
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- BADGE ROOM -->
+            <LinearLayout
+                android:id="@+id/badgeRoom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_panel"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/press_start_2p"
+                    android:text="@string/badge_room"
+                    android:textColor="@color/text_dark"
+                    android:textSize="10sp"
+                    android:layout_marginBottom="12dp"
+                    tools:ignore="SmallSp" />
+
+                <GridLayout
+                    android:id="@+id/badgeGrid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="4"
+                    android:gravity="center">
+                </GridLayout>
+            </LinearLayout>
+
+            <!-- FRIENDS LIST -->
+            <LinearLayout
+                android:id="@+id/friendsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_stone_tablet"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/press_start_2p"
+                        android:text="PARTY MEMBERS"
+                        android:textColor="#333333"
+                        android:textSize="10sp"
+                        tools:ignore="SmallSp" />
+                    <ImageButton
+                        android:id="@+id/btnAddFriend"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_alignParentEnd="true"
+                        android:src="@android:drawable/ic_input_add"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:tint="#000000" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:id="@+id/friendsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- STATS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_panel"
                 android:orientation="vertical"
                 android:padding="16dp"
                 android:layout_marginBottom="16dp">
@@ -131,8 +264,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/press_start_2p"
-                    android:text="@string/multiplayer_stats"
-                    android:textColor="#333333"
+                    android:text="STATS"
+                    android:textColor="@color/text_dark"
                     android:textSize="10sp"
                     android:layout_marginBottom="12dp"
                     tools:ignore="SmallSp" />
@@ -157,6 +290,22 @@
                     tools:ignore="SmallSp" />
             </LinearLayout>
 
+            <!-- ACTIONS -->
+            <TextView
+                android:id="@+id/btnUnfriend"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_button_orange"
+                android:fontFamily="@font/press_start_2p"
+                android:gravity="center"
+                android:text="UNFRIEND"
+                android:textColor="#000000"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/btnSignOut"
                 android:layout_width="match_parent"
@@ -169,9 +318,11 @@
                 android:textSize="12sp"
                 android:clickable="true"
                 android:focusable="true" />
+
         </LinearLayout>
     </ScrollView>
 
+    <!-- BOTTOM NAV -->
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -180,10 +331,11 @@
         android:orientation="horizontal"
         android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent">
-        <ImageButton android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_view" android:background="?attr/selectableItemBackgroundBorderless" app:tint="#000000" />
-        <ImageButton android:id="@+id/navGoals" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_compass" android:background="?attr/selectableItemBackgroundBorderless" app:tint="#000000" />
-        <ImageButton android:id="@+id/navAdd" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_input_add" android:background="?attr/selectableItemBackgroundBorderless" app:tint="#000000" />
-        <ImageButton android:id="@+id/navChallenges" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/btn_star_big_on" android:background="?attr/selectableItemBackgroundBorderless" app:tint="#000000" />
-        <ImageButton android:id="@+id/navProfile" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_myplaces" android:background="?attr/selectableItemBackgroundBorderless" app:tint="#000000" />
+        <ImageButton android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_view" android:background="?attr/selectableItemBackgroundBorderless" />
+        <ImageButton android:id="@+id/navGoals" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_compass" android:background="?attr/selectableItemBackgroundBorderless" />
+        <ImageButton android:id="@+id/navAdd" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_input_add" android:background="?attr/selectableItemBackgroundBorderless" />
+        <ImageButton android:id="@+id/navChallenges" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/btn_star_big_on" android:background="?attr/selectableItemBackgroundBorderless" />
+        <ImageButton android:id="@+id/navProfile" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_myplaces" android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -63,6 +63,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- BOTTOM NAV -->
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
@@ -79,8 +80,7 @@
             android:layout_weight="1"
             android:src="@android:drawable/ic_menu_view"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/home"
-            app:tint="#000000" />
+            android:contentDescription="@string/home" />
 
         <ImageButton
             android:id="@+id/navGoals"
@@ -89,8 +89,7 @@
             android:layout_weight="1"
             android:src="@android:drawable/ic_menu_compass"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/goals"
-            app:tint="#000000" />
+            android:contentDescription="@string/goals" />
 
         <ImageButton
             android:id="@+id/navAdd"
@@ -99,8 +98,7 @@
             android:layout_weight="1"
             android:src="@android:drawable/ic_input_add"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/add"
-            app:tint="#000000" />
+            android:contentDescription="@string/add" />
 
         <ImageButton
             android:id="@+id/navChallenges"
@@ -109,8 +107,7 @@
             android:layout_weight="1"
             android:src="@android:drawable/btn_star_big_on"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/challenges"
-            app:tint="#000000" />
+            android:contentDescription="@string/challenges" />
 
         <ImageButton
             android:id="@+id/navProfile"
@@ -119,8 +116,7 @@
             android:layout_weight="1"
             android:src="@android:drawable/ic_menu_myplaces"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/profile"
-            app:tint="#000000" />
+            android:contentDescription="@string/profile" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

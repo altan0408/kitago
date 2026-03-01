@@ -132,6 +132,7 @@
                 android:src="@android:drawable/ic_menu_today"
                 android:contentDescription="@null" />
             <TextView
+                android:id="@+id/tvSelectedDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"

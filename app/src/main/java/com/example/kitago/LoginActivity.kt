@@ -51,7 +51,7 @@ class LoginActivity : ComponentActivity() {
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        val etIdentifier = findViewById<EditText>(R.id.etUsername) // Input can be Email OR Username
+        val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
         val btnSignIn = findViewById<TextView>(R.id.btnSignIn)
         val ivGoogle = findViewById<ImageView>(R.id.ivGoogle)
@@ -59,19 +59,22 @@ class LoginActivity : ComponentActivity() {
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
 
         btnSignIn.setOnClickListener {
-            val identifier = etIdentifier.text.toString().trim()
+            val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
-            if (identifier.isNotEmpty() && password.isNotEmpty()) {
-                if (Patterns.EMAIL_ADDRESS.matcher(identifier).matches()) {
-                    // It's an email, login directly
-                    performLogin(identifier, password)
-                } else {
-                    // It's a username, lookup the email first
-                    lookupEmailAndLogin(identifier, password)
-                }
-            } else {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            if (validateLogin(email, password)) {
+                firebaseAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this) { task ->
+                        if (task.isSuccessful) {
+                            // Ensure existing manual users are indexed on login
+                            ensureUsernameIsIndexed()
+                            navigateToDashboard()
+                        } else {
+                            showGameDialog("LOGIN FAILED", task.exception?.message ?: "Invalid credentials.") {
+                                etPassword.text.clear()
+                            }
+                        }
+                    }
             }
         }
 
@@ -85,34 +88,16 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
-    private fun performLogin(email: String, pass: String) {
-        firebaseAuth.signInWithEmailAndPassword(email, pass)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    navigateToDashboard()
-                } else {
-                    showGameDialog("LOGIN FAILED", task.exception?.message ?: "Invalid credentials.") {
-                        findViewById<EditText>(R.id.etPassword).text.clear()
-                    }
-                }
-            }
-    }
-
-    private fun lookupEmailAndLogin(username: String, pass: String) {
-        val cleanName = username.lowercase().replace(" ", "_")
-        FirebaseDatabase.getInstance().reference.child("usernames").child(cleanName).get()
-            .addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val userId = snapshot.value.toString()
-                    FirebaseDatabase.getInstance().reference.child("users").child(userId).child("email").get()
-                        .addOnSuccessListener { emailSnap ->
-                            val email = emailSnap.value.toString()
-                            performLogin(email, pass)
-                        }
-                } else {
-                    showGameDialog("LOGIN FAILED", "Username not found.") {}
-                }
-            }
+    private fun validateLogin(email: String, pass: String): Boolean {
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Enter a valid email address", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        if (pass.isEmpty()) {
+            Toast.makeText(this, "Enter password", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        return true
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
@@ -131,16 +116,16 @@ class LoginActivity : ComponentActivity() {
                             userData["profilePic"] = user.photoUrl?.toString() ?: ""
                             userData["balance"] = 0.0
                             userData["level"] = 1
+                            userData["xp"] = 0
                             userData["wins"] = 0
                             userData["streak"] = 0
                             
                             userRef.setValue(userData).addOnCompleteListener {
-                                // Also store in usernames lookup
-                                val cleanName = (user.displayName ?: "Adventurer").lowercase().replace(" ", "_")
-                                FirebaseDatabase.getInstance().reference.child("usernames").child(cleanName).setValue(user.uid)
+                                ensureUsernameIsIndexed()
                                 navigateToDashboard()
                             }
                         } else {
+                            ensureUsernameIsIndexed()
                             navigateToDashboard()
                         }
                     }
@@ -148,6 +133,18 @@ class LoginActivity : ComponentActivity() {
                     Toast.makeText(this, "Google auth failed", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    private fun ensureUsernameIsIndexed() {
+        val user = firebaseAuth.currentUser ?: return
+        val db = FirebaseDatabase.getInstance().reference
+        db.child("users").child(user.uid).child("username").get().addOnSuccessListener { snapshot ->
+            val username = snapshot.getValue(String::class.java)
+            if (username != null) {
+                val cleanName = username.lowercase().replace(" ", "_")
+                db.child("usernames").child(cleanName).setValue(user.uid)
+            }
+        }
     }
 
     private fun navigateToDashboard() {

@@ -59,7 +59,7 @@
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="16dp"
-                android:progress="65"
+                android:progress="0"
                 android:progressDrawable="@drawable/bg_xp_bar"
                 android:layout_marginTop="8dp" />
         </LinearLayout>
@@ -108,7 +108,6 @@
                     android:textColor="#000000"
                     android:layout_marginTop="8dp" />
 
-                <!-- Monthly Flow -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -194,7 +193,6 @@
                 android:progressDrawable="@drawable/bg_hp_bar"
                 android:layout_marginBottom="24dp" />
 
-            <!-- SAVINGS VAULT (Goal Totals) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -234,7 +232,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- ACTIVE QUESTS -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -260,7 +257,9 @@
                     android:textSize="8sp"
                     android:fontFamily="@font/press_start_2p"
                     android:textColor="@color/gold_light"
-                    tools:ignore="SmallSp" />
+                    tools:ignore="SmallSp"
+                    android:clickable="true"
+                    android:focusable="true" />
             </RelativeLayout>
 
             <LinearLayout
@@ -269,7 +268,9 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_panel"
                 android:padding="16dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true">
                 <TextView
                     android:id="@+id/tvPreviewGoalName"
                     android:layout_width="wrap_content"

@@ -35,10 +35,24 @@ class DashboardActivity : ComponentActivity() {
 
         userRef = firebaseDatabase.reference.child("users").child(currentUser.uid)
 
+        // Self-heal: ensure username is indexed for friend searches
+        ensureUsernameIsIndexed()
+        
         checkAndPerformMonthlyReset()
         setupUI()
         observeUserData()
         setupNavigation()
+    }
+
+    private fun ensureUsernameIsIndexed() {
+        val user = firebaseAuth.currentUser ?: return
+        userRef.child("username").get().addOnSuccessListener { snapshot ->
+            val username = snapshot.getValue(String::class.java)
+            if (username != null) {
+                val cleanName = username.lowercase().replace(" ", "_")
+                firebaseDatabase.reference.child("usernames").child(cleanName).setValue(user.uid)
+            }
+        }
     }
 
     private fun checkAndPerformMonthlyReset() {
@@ -48,6 +62,7 @@ class DashboardActivity : ComponentActivity() {
         userRef.child("lastResetMonth").get().addOnSuccessListener { snapshot ->
             val lastReset = snapshot.getValue(String::class.java)
             if (lastReset != null && lastReset != currentMonthYear) {
+                // NEW MONTH: Reset balance and totals but KEEP goals
                 val updates = hashMapOf<String, Any?>(
                     "balance" to 0.0,
                     "expense_totals" to null,
@@ -134,7 +149,7 @@ class DashboardActivity : ComponentActivity() {
 
     private fun updateGoalPreview(goal: Goal) {
         findViewById<TextView>(R.id.tvPreviewGoalName).text = goal.name.uppercase()
-        val progress = if (goal.targetGold > 0) (goal.savedGold / goal.targetGold * 100).toInt().coerceIn(0, 100) else 0
+        val progress = if (goal.targetGold > 0) (goal.savedGold / goal.targetGold * 100).toInt() else 0
         findViewById<ProgressBar>(R.id.previewGoalProgress).progress = progress
     }
 
@@ -144,9 +159,9 @@ class DashboardActivity : ComponentActivity() {
             Glide.with(this).load(data).circleCrop().placeholder(R.drawable.logo_kitago_main).into(imageView)
         } else {
             try {
-                val decodedString = android.util.Base64.decode(data, android.util.Base64.DEFAULT)
-                val decodedByte = android.graphics.BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
-                Glide.with(this).load(decodedByte).circleCrop().into(imageView)
+                val androidUtilBase64 = android.util.Base64.decode(data, android.util.Base64.DEFAULT)
+                val bitmap = android.graphics.BitmapFactory.decodeByteArray(androidUtilBase64, 0, androidUtilBase64.size)
+                Glide.with(this).load(bitmap).circleCrop().into(imageView)
             } catch (e: Exception) { imageView.setImageResource(R.drawable.logo_kitago_main) }
         }
     }

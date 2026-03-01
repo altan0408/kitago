@@ -72,15 +72,23 @@ class SignupActivity : ComponentActivity() {
             val confirmPassword = etConfirmPassword.text.toString().trim()
 
             if (validateFields(username, email, password, confirmPassword)) {
-                firebaseAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this) { task ->
-                        if (task.isSuccessful) {
-                            val userId = firebaseAuth.currentUser?.uid ?: return@addOnCompleteListener
-                            saveUserToDatabase(userId, username, email, "")
-                        } else {
-                            Toast.makeText(this, "Sign up failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-                        }
+                // Check if username is taken first
+                val cleanName = username.lowercase().replace(" ", "_")
+                firebaseDatabase.reference.child("usernames").child(cleanName).get().addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        Toast.makeText(this, "USERNAME ALREADY TAKEN!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        firebaseAuth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(this) { task ->
+                                if (task.isSuccessful) {
+                                    val userId = firebaseAuth.currentUser?.uid ?: return@addOnCompleteListener
+                                    saveUserToDatabase(userId, username, email, "")
+                                } else {
+                                    Toast.makeText(this, "Sign up failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                }
+                            }
                     }
+                }
             }
         }
 
@@ -141,20 +149,28 @@ class SignupActivity : ComponentActivity() {
 
     private fun saveUserToDatabase(userId: String, username: String, email: String, profilePic: String) {
         val userRef = firebaseDatabase.reference.child("users").child(userId)
+        val usernamesRef = firebaseDatabase.reference.child("usernames")
+        
         val userData = HashMap<String, Any>()
         userData["username"] = username
         userData["email"] = email
         userData["profilePic"] = profilePic
         userData["balance"] = 0.0
         userData["level"] = 1
+        userData["xp"] = 0
         userData["wins"] = 0
         userData["streak"] = 0
         
+        val cleanName = username.lowercase().replace(" ", "_")
+        
+        // Save user data and update lookup index
         userRef.setValue(userData).addOnCompleteListener {
-            val intent = Intent(this, DashboardActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
+            usernamesRef.child(cleanName).setValue(userId).addOnCompleteListener {
+                val intent = Intent(this, DashboardActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
         }
     }
 }
