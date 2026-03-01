@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Kotlin internal folders
+/.kotlin/
+kotlin-daemon-*.log
