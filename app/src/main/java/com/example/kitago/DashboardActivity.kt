@@ -113,17 +113,9 @@ class DashboardActivity : ComponentActivity() {
                 findViewById<TextView>(R.id.tvTotalIncome).text = "₱${totalIncome.toInt()}"
                 findViewById<TextView>(R.id.tvTotalExpense).text = "₱${totalExpense.toInt()}"
 
-                // Total Quest Savings
-                val goals = snapshot.child("goals")
-                var totalQuestSaved = 0.0
-                var lastIncompleteGoal: Goal? = null
-                
-                for (goalSnap in goals.children) {
-                    val goal = goalSnap.getValue(Goal::class.java) ?: continue
-                    totalQuestSaved += goal.savedGold
-                    if (goal.savedGold < goal.targetGold) lastIncompleteGoal = goal
-                }
-                findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format("₱%.2f", totalQuestSaved)
+                // Total Quest Savings & Preview
+                val goalIds = snapshot.child("goals").children.mapNotNull { it.key }
+                fetchGoalsData(goalIds)
 
                 // HP Bar
                 val hpBar = findViewById<ProgressBar>(R.id.budgetHpBar)
@@ -136,15 +128,46 @@ class DashboardActivity : ComponentActivity() {
                     hpLabel.visibility = View.VISIBLE
                     hpBar.progress = ((balance / 5000.0) * 100).toInt().coerceIn(0, 100)
                 }
-
-                // Quest Preview
-                lastIncompleteGoal?.let { updateGoalPreview(it) } ?: run {
-                    findViewById<TextView>(R.id.tvPreviewGoalName).text = "NO ACTIVE QUESTS"
-                    findViewById<ProgressBar>(R.id.previewGoalProgress).progress = 0
-                }
             }
             override fun onCancelled(error: DatabaseError) {}
         })
+    }
+
+    private fun fetchGoalsData(goalIds: List<String>) {
+        if (goalIds.isEmpty()) {
+            findViewById<TextView>(R.id.tvTotalSavedGoals).text = "₱0.00"
+            findViewById<TextView>(R.id.tvPreviewGoalName).text = "NO ACTIVE QUESTS"
+            findViewById<ProgressBar>(R.id.previewGoalProgress).progress = 0
+            return
+        }
+
+        var totalQuestSaved = 0.0
+        var lastIncompleteGoal: Goal? = null
+        var loadedCount = 0
+
+        for (id in goalIds) {
+            firebaseDatabase.reference.child("goals").child(id).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val goal = snapshot.getValue(Goal::class.java)
+                    if (goal != null) {
+                        totalQuestSaved += goal.savedGold
+                        if (goal.savedGold < goal.targetGold) lastIncompleteGoal = goal
+                    }
+                    
+                    loadedCount++
+                    if (loadedCount == goalIds.size) {
+                        findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format("₱%.2f", totalQuestSaved)
+                        lastIncompleteGoal?.let { updateGoalPreview(it) } ?: run {
+                            findViewById<TextView>(R.id.tvPreviewGoalName).text = "NO ACTIVE QUESTS"
+                            findViewById<ProgressBar>(R.id.previewGoalProgress).progress = 0
+                        }
+                    }
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    loadedCount++
+                }
+            })
+        }
     }
 
     private fun updateGoalPreview(goal: Goal) {

@@ -7,14 +7,24 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object DataManager {
-    private const val MAX_LEVEL = 16
+    private const val MAX_LEVEL = 50
     private const val XP_PER_DEPOSIT = 50
     private const val XP_PER_CONTRIBUTION = 100
-    private const val XP_STREAK_BONUS = 150
-    private const val XP_GOAL_COMPLETED = 1000
+    private const val XP_STREAK_BONUS = 250
+    private const val XP_GOAL_COMPLETED = 1500
 
-    // XP needed increases: 500, 1000, 1500, 2000...
-    fun getXpNeededForLevel(level: Int): Int = level * 500
+    fun getXpNeededForLevel(level: Int): Int = level * 750
+
+    fun getLevelTitle(level: Int): String {
+        return when {
+            level >= 40 -> "LEGENDARY TREASURER"
+            level >= 30 -> "DRAGON HOARDER"
+            level >= 20 -> "QUEST MASTER"
+            level >= 10 -> "ELITE ADVENTURER"
+            level >= 5 -> "SKILLED SAVER"
+            else -> "NOVICE"
+        }
+    }
 
     fun syncUpdateBalance(amount: Double, isIncome: Boolean, onComplete: (Boolean) -> Unit = {}) {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
@@ -25,99 +35,108 @@ object DataManager {
                 val balance = currentData.child("balance").getValue(Double::class.java) ?: 0.0
                 currentData.child("balance").value = if (isIncome) balance + amount else balance - amount
 
-                val path = if (isIncome) "income_totals" else "expense_totals"
-                val category = if (isIncome) "VAULT_DEPOSIT" else "VAULT_WITHDRAW"
-                
-                val categoryRef = currentData.child(path).child(category)
-                val currentTotal = categoryRef.getValue(Double::class.java) ?: 0.0
-                categoryRef.value = currentTotal + amount
-
-                if (isIncome) addXp(currentData, XP_PER_DEPOSIT)
+                if (isIncome) {
+                    val incomeRef = currentData.child("income_totals").child("VAULT_DEPOSIT")
+                    val currentTotal = incomeRef.getValue(Double::class.java) ?: 0.0
+                    incomeRef.value = currentTotal + amount
+                    addXp(currentData, XP_PER_DEPOSIT)
+                }
                 return Transaction.success(currentData)
             }
             override fun onComplete(e: DatabaseError?, c: Boolean, s: DataSnapshot?) { onComplete(c) }
         })
     }
 
-    fun syncAddTransaction(amount: Double, category: String, note: String, isIncome: Boolean, onComplete: (Boolean) -> Unit) {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
-        val userRef = FirebaseDatabase.getInstance().reference.child("users").child(currentUser.uid)
-
-        userRef.runTransaction(object : Transaction.Handler {
-            override fun doTransaction(currentData: MutableData): Transaction.Result {
-                val currentBalance = currentData.child("balance").getValue(Double::class.java) ?: 0.0
-                currentData.child("balance").value = if (isIncome) currentBalance + amount else currentBalance - amount
-
-                val path = if (isIncome) "income_totals" else "expense_totals"
-                val catRef = currentData.child(path).child(category)
-                catRef.value = (catRef.getValue(Double::class.java) ?: 0.0) + amount
-
-                if (isIncome) addXp(currentData, XP_PER_DEPOSIT)
-                return Transaction.success(currentData)
-            }
-            override fun onComplete(e: DatabaseError?, c: Boolean, s: DataSnapshot?) { onComplete(c) }
-        })
-    }
-
-    fun handleContribution(amount: Double, goalId: String, onComplete: (Boolean) -> Unit) {
+    fun handleContribution(amount: Double, goalId: String, goal: Goal, onComplete: (Boolean) -> Unit) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: "User"
         val db = FirebaseDatabase.getInstance().reference
+
+        val transactionId = db.push().key ?: "c_${System.currentTimeMillis()}"
+        val contribution = Contribution(uid, userName, amount, System.currentTimeMillis())
+
+        val updates = hashMapOf<String, Any?>()
+        val newSavedTotal = goal.savedGold + amount
+        updates["goals/$goalId/savedGold"] = newSavedTotal
+        updates["goals/$goalId/contributionHistory/$transactionId"] = contribution
+        
+        if (newSavedTotal >= goal.targetGold && goal.status != "COMPLETED") {
+            updates["goals/$goalId/status"] = "COMPLETED"
+        }
 
         db.child("users").child(uid).runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
                 val balance = currentData.child("balance").getValue(Double::class.java) ?: 0.0
                 if (balance < amount) return Transaction.abort()
 
+                // 1. Deduct Balance
                 currentData.child("balance").value = balance - amount
                 
-                // 1. Add to monthly expense totals under SAVINGS category
-                val savingsRef = currentData.child("expense_totals").child("SAVINGS")
-                val currentSavingsTotal = savingsRef.getValue(Double::class.java) ?: 0.0
-                savingsRef.value = currentSavingsTotal + amount
+                // 2. Update Total Saved for Leaderboards
+                val totalSavedEver = currentData.child("totalSavedGold").getValue(Double::class.java) ?: 0.0
+                currentData.child("totalSavedGold").value = totalSavedEver + amount
 
-                // 2. Add to specific goal's permanent saved total
-                val goalNode = currentData.child("goals").child(goalId)
-                val saved = (goalNode.child("savedGold").getValue(Double::class.java) ?: 0.0) + amount
-                val target = goalNode.child("targetGold").getValue(Double::class.java) ?: 0.0
-                goalNode.child("savedGold").value = saved
-
-                if (saved >= target && goalNode.child("status").value != "COMPLETED") {
-                    goalNode.child("status").value = "COMPLETED"
+                // 3. XP and Stats
+                if (newSavedTotal >= goal.targetGold && goal.status != "COMPLETED") {
                     addXp(currentData, XP_GOAL_COMPLETED)
-                    val stars = currentData.child("stars").getValue(Int::class.java) ?: 0
-                    currentData.child("stars").value = stars + 1
-                    awardBadge(currentData, "goal_$goalId", "Completed: ${goalNode.child("name").value}")
+                    val wins = currentData.child("wins").getValue(Int::class.java) ?: 0
+                    currentData.child("wins").value = wins + 1
+                    awardBadge(currentData, "goal_$goalId", "Mastered: ${goal.name}")
                 }
-
-                handleStreakAndXp(currentData)
+                
+                handleStreakAndXp(currentData, goalId)
                 return Transaction.success(currentData)
             }
-            override fun onComplete(e: DatabaseError?, c: Boolean, s: DataSnapshot?) { onComplete(c) }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {
+                if (committed) {
+                    db.updateChildren(updates).addOnCompleteListener { onComplete(it.isSuccessful) }
+                } else {
+                    onComplete(false)
+                }
+            }
         })
     }
 
-    private fun handleStreakAndXp(userData: MutableData) {
-        val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+    private fun handleStreakAndXp(userNode: MutableData, goalId: String) {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val today = sdf.format(Date())
-        val lastDate = userData.child("lastContributionDate").getValue(String::class.java) ?: ""
-        var streak = userData.child("streak").getValue(Int::class.java) ?: 0
-
-        if (lastDate != today) {
-            val yesterday = Calendar.getInstance().apply { add(Calendar.DATE, -1) }
-            if (lastDate == sdf.format(yesterday.time)) streak++ else streak = 1
-            
-            userData.child("lastContributionDate").value = today
-            userData.child("streak").value = streak
-
-            if (streak == 3) awardBadge(userData, "streak_3", "3-Day Streak!")
-            if (streak == 7) awardBadge(userData, "streak_7", "Weekly Warrior!")
+        
+        val userStreaks = userNode.child("goal_streaks").child(goalId)
+        val contributionDates = userStreaks.child("dates")
+        
+        if (contributionDates.child(today).value != null) {
+            addXp(userNode, XP_PER_CONTRIBUTION)
+            return
         }
 
-        val xpBonus = if (streak >= 3) XP_STREAK_BONUS else 0
-        addXp(userData, XP_PER_CONTRIBUTION + xpBonus)
+        contributionDates.child(today).value = true
+        
+        var streak = 1
+        val cal = Calendar.getInstance()
+        while (true) {
+            cal.add(Calendar.DATE, -1)
+            val dateStr = sdf.format(cal.time)
+            if (contributionDates.child(dateStr).value != null) {
+                streak++
+            } else {
+                break
+            }
+        }
+
+        userStreaks.child("current").value = streak
+        
+        // Global highest streak
+        val globalHighest = userNode.child("streak").getValue(Int::class.java) ?: 0
+        if (streak > globalHighest) userNode.child("streak").value = streak
+
+        val bonus = if (streak >= 3) XP_STREAK_BONUS else 0
+        addXp(userNode, XP_PER_CONTRIBUTION + bonus)
+        
+        if (streak == 7) awardBadge(userNode, "week_streak_$goalId", "Unstoppable Week!")
     }
 
-    private fun addXp(userData: MutableData, amount: Int) {
+    fun addXp(userData: MutableData, amount: Int) {
         var xp = userData.child("xp").getValue(Int::class.java) ?: 0
         var level = userData.child("level").getValue(Int::class.java) ?: 1
         
@@ -135,9 +154,5 @@ object DataManager {
 
     fun awardBadge(userData: MutableData, id: String, desc: String) {
         userData.child("badges").child(id).value = desc
-    }
-
-    fun setBalance(context: Context, amount: Double) {
-        context.getSharedPreferences("KitagoPrefs", Context.MODE_PRIVATE).edit().putFloat("total_balance", amount.toFloat()).apply()
     }
 }

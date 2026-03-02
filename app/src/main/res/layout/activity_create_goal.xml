@@ -45,105 +45,150 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- FORM PANEL -->
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="40dp"
-        android:background="@drawable/bg_panel"
-        android:orientation="vertical"
-        android:padding="24dp"
-        app:layout_constraintTop_toBottomOf="@id/tvCreateTitle">
-
-        <TextView
-            android:id="@+id/tvGoalNameLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/press_start_2p"
-            android:text="GOAL NAME"
-            android:textColor="@color/text_muted"
-            android:textSize="10sp"
-            android:labelFor="@+id/etGoalName"
-            tools:ignore="SmallSp" />
-
-        <EditText
-            android:id="@+id/etGoalName"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_input"
-            android:fontFamily="@font/press_start_2p"
-            android:hint="e.g. EPIC PC"
-            android:padding="12dp"
-            android:textSize="10sp"
-            android:importantForAutofill="no"
-            android:inputType="text"
-            tools:ignore="SmallSp" />
-
-        <TextView
-            android:id="@+id/tvTargetGoldLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:fontFamily="@font/press_start_2p"
-            android:text="TARGET GOLD"
-            android:textColor="@color/text_muted"
-            android:textSize="10sp"
-            android:labelFor="@+id/etTargetGold"
-            tools:ignore="SmallSp" />
-
-        <EditText
-            android:id="@+id/etTargetGold"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_input"
-            android:fontFamily="@font/press_start_2p"
-            android:hint="0.00"
-            android:padding="12dp"
-            android:textSize="10sp"
-            android:importantForAutofill="no"
-            android:inputType="numberDecimal"
-            tools:ignore="SmallSp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:fontFamily="@font/press_start_2p"
-            android:text="DEADLINE"
-            android:textColor="@color/text_muted"
-            android:textSize="10sp"
-            tools:ignore="SmallSp" />
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintTop_toBottomOf="@id/tvCreateTitle"
+        app:layout_constraintBottom_toTopOf="@id/btnCreateGoal">
 
         <LinearLayout
-            android:id="@+id/btnSelectDate"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_input"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_today"
-                android:contentDescription="@null" />
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_panel"
+            android:orientation="vertical"
+            android:padding="24dp">
+
             <TextView
-                android:id="@+id/tvSelectedDate"
+                android:id="@+id/tvGoalNameLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
                 android:fontFamily="@font/press_start_2p"
-                android:text="SELECT DATE"
+                android:text="GOAL NAME"
                 android:textColor="@color/text_muted"
-                android:textSize="8sp"
+                android:textSize="10sp"
+                android:labelFor="@+id/etGoalName"
                 tools:ignore="SmallSp" />
-        </LinearLayout>
 
-    </LinearLayout>
+            <EditText
+                android:id="@+id/etGoalName"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:fontFamily="@font/press_start_2p"
+                android:hint="e.g. EPIC PC"
+                android:padding="12dp"
+                android:textSize="10sp"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:id="@+id/tvTargetGoldLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/press_start_2p"
+                android:text="TARGET GOLD"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp"
+                android:labelFor="@+id/etTargetGold"
+                tools:ignore="SmallSp" />
+
+            <EditText
+                android:id="@+id/etTargetGold"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:fontFamily="@font/press_start_2p"
+                android:hint="0.00"
+                android:padding="12dp"
+                android:textSize="10sp"
+                android:importantForAutofill="no"
+                android:inputType="numberDecimal"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/press_start_2p"
+                android:text="DEADLINE"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp"
+                tools:ignore="SmallSp" />
+
+            <LinearLayout
+                android:id="@+id/btnSelectDate"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:clickable="true"
+                android:focusable="true">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_today"
+                    android:contentDescription="@null" />
+                <TextView
+                    android:id="@+id/tvSelectedDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:fontFamily="@font/press_start_2p"
+                    android:text="SELECT DATE"
+                    android:textColor="@color/text_muted"
+                    android:textSize="8sp"
+                    tools:ignore="SmallSp" />
+            </LinearLayout>
+
+            <!-- COLLABORATION SECTION -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/press_start_2p"
+                android:text="COLLABORATOR (OPTIONAL)"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp"
+                tools:ignore="SmallSp" />
+
+            <LinearLayout
+                android:id="@+id/btnSelectCollaborator"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:clickable="true"
+                android:focusable="true">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_add"
+                    android:contentDescription="@null" />
+                <TextView
+                    android:id="@+id/tvSelectedCollaborator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:fontFamily="@font/press_start_2p"
+                    android:text="INVITE FRIEND"
+                    android:textColor="@color/text_muted"
+                    android:textSize="8sp"
+                    tools:ignore="SmallSp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
     <!-- CREATE BUTTON -->
     <TextView

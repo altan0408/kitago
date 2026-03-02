@@ -52,7 +52,7 @@
         android:background="@drawable/bg_panel"
         android:orientation="vertical"
         android:padding="20dp"
-        app:layout_constraintBottom_toTopOf="@id/btnAction"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
         <TextView
@@ -75,23 +75,6 @@
                 android:orientation="vertical" />
         </ScrollView>
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/btnAction"
-        android:layout_width="260dp"
-        android:layout_height="56dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_button_teal"
-        android:fontFamily="@font/press_start_2p"
-        android:gravity="center"
-        android:text="@string/create_join_challenge"
-        android:textColor="#000000"
-        android:textSize="12sp"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <!-- BOTTOM NAV -->
     <LinearLayout

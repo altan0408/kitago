@@ -25,7 +25,6 @@
         <activity android:name=".GoalDetailActivity" />
         <activity android:name=".ChallengesActivity" />
         <activity android:name=".AddTransactionActivity" />
-        <activity android:name=".CreateJoinChallengeActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".CreateGoalActivity" />
         <activity android:name=".SettingsActivity" />

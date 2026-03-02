@@ -1,6 +1,7 @@
 package com.example.kitago
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
@@ -9,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.res.ResourcesCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.util.*
 
 class GoalDetailActivity : ComponentActivity() {
 
@@ -27,8 +29,7 @@ class GoalDetailActivity : ComponentActivity() {
 
         val goalId = intent.getStringExtra("GOAL_ID") ?: return
         val userId = firebaseAuth.currentUser?.uid ?: return
-        val userNodeRef = firebaseDatabase.reference.child("users").child(userId)
-        goalRef = userNodeRef.child("goals").child(goalId)
+        goalRef = firebaseDatabase.reference.child("goals").child(goalId)
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
             finish()
@@ -42,8 +43,16 @@ class GoalDetailActivity : ComponentActivity() {
             }
         }
 
-        // Observe user balance to ensure we have the latest amount
-        userNodeRef.child("balance").addValueEventListener(object : ValueEventListener {
+        findViewById<ImageButton>(R.id.btnEditGoal).setOnClickListener {
+            showEditGoalDialog()
+        }
+
+        findViewById<ImageButton>(R.id.btnDeleteGoal).setOnClickListener {
+            showDeleteGoalDialog()
+        }
+
+        // Observe user balance
+        firebaseDatabase.reference.child("users").child(userId).child("balance").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 userBalance = snapshot.getValue(Double::class.java) ?: 0.0
             }
@@ -68,6 +77,14 @@ class GoalDetailActivity : ComponentActivity() {
                 findViewById<TextView>(R.id.tvSavedAmount).text = String.format("₱%.2f", goal.savedGold)
                 findViewById<TextView>(R.id.tvTargetAmount).text = String.format("₱%.2f", goal.targetGold)
                 findViewById<TextView>(R.id.tvDeadline).text = goal.deadline
+
+                val tvCollabs = findViewById<TextView>(R.id.tvCollaborators)
+                if (goal.isCollaborative) {
+                    val names = goal.collaboratorNames.values.joinToString(", ")
+                    tvCollabs.text = "PARTY: $names"
+                } else {
+                    tvCollabs.text = ""
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -76,12 +93,100 @@ class GoalDetailActivity : ComponentActivity() {
         })
     }
 
+    private fun showEditGoalDialog() {
+        val goal = currentGoal ?: return
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.activity_create_goal, null)
+        dialogView.findViewById<ImageButton>(R.id.btnBack).visibility = android.view.View.GONE
+        dialogView.findViewById<TextView>(R.id.tvCreateTitle).text = "EDIT QUEST"
+        dialogView.findViewById<TextView>(R.id.btnCreateGoal).text = "UPDATE"
+        dialogView.findViewById<LinearLayout>(R.id.btnSelectCollaborator).visibility = android.view.View.GONE
+        
+        val etName = dialogView.findViewById<EditText>(R.id.etGoalName)
+        val etTarget = dialogView.findViewById<EditText>(R.id.etTargetGold)
+        val tvDate = dialogView.findViewById<TextView>(R.id.tvSelectedDate)
+        
+        etName.setText(goal.name)
+        etTarget.setText(goal.targetGold.toString())
+        tvDate.text = goal.deadline
+        var updatedDeadline = goal.deadline
+
+        dialogView.findViewById<LinearLayout>(R.id.btnSelectDate).setOnClickListener {
+            val calendar = Calendar.getInstance()
+            DatePickerDialog(this, { _, year, month, dayOfMonth ->
+                updatedDeadline = "$dayOfMonth/${month + 1}/$year"
+                tvDate.text = updatedDeadline
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+        }
+
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialogView.findViewById<TextView>(R.id.btnCreateGoal).setOnClickListener {
+            val newName = etName.text.toString().trim()
+            val newTarget = etTarget.text.toString().toDoubleOrNull() ?: 0.0
+            
+            if (newName.isNotEmpty() && newTarget > 0) {
+                updateGoalData(newName, newTarget, updatedDeadline)
+                dialog.dismiss()
+            }
+        }
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun updateGoalData(name: String, target: Double, deadline: String) {
+        val goal = currentGoal ?: return
+        val db = firebaseDatabase.reference
+        val updates = hashMapOf<String, Any?>()
+        
+        updates["goals/${goal.id}/name"] = name
+        updates["goals/${goal.id}/targetGold"] = target
+        updates["goals/${goal.id}/deadline"] = deadline
+
+        db.updateChildren(updates).addOnSuccessListener {
+            Toast.makeText(this, "QUEST UPDATED!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showDeleteGoalDialog() {
+        val goal = currentGoal ?: return
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "ABANDON QUEST?"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = if (goal.isCollaborative) 
+            "DELETE ${goal.name.uppercase()} FOR ALL PARTY MEMBERS?" 
+            else "ARE YOU SURE YOU WANT TO DELETE ${goal.name.uppercase()}?"
+        
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "DELETE"
+            setOnClickListener {
+                deleteGoalForAll()
+                dialog.dismiss()
+                finish()
+            }
+        }
+        
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun deleteGoalForAll() {
+        val goal = currentGoal ?: return
+        val db = firebaseDatabase.reference
+        val updates = hashMapOf<String, Any?>()
+        
+        updates["goals/${goal.id}"] = null
+        goal.collaboratorStatuses.keys.forEach { uid ->
+            updates["users/$uid/goals/${goal.id}"] = null
+        }
+
+        db.updateChildren(updates).addOnSuccessListener {
+            Toast.makeText(this, "QUEST DELETED", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun showContributeDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(true)
-            .create()
+        val dialog = AlertDialog.Builder(this).setView(dialogView).setCancelable(true).create()
 
         val title = dialogView.findViewById<TextView>(R.id.tvDialogTitle)
         val message = dialogView.findViewById<TextView>(R.id.tvDialogMessage)
@@ -94,26 +199,22 @@ class GoalDetailActivity : ComponentActivity() {
         val input = EditText(this).apply {
             hint = "0.00"
             inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-            val customFont = ResourcesCompat.getFont(this@GoalDetailActivity, R.font.press_start_2p)
-            typeface = customFont
+            typeface = ResourcesCompat.getFont(this@GoalDetailActivity, R.font.press_start_2p)
             textSize = 14f
             setPadding(40, 40, 40, 40)
             setBackgroundResource(R.drawable.bg_input)
-            val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 140)
-            params.setMargins(0, 0, 0, 40)
-            layoutParams = params
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 140).apply { setMargins(0, 0, 0, 40) }
         }
         
         val container = dialogView as LinearLayout
-        val index = container.indexOfChild(message)
-        container.addView(input, index + 1)
+        container.addView(input, container.indexOfChild(message) + 1)
 
         btnSave.setOnClickListener {
             val amountStr = input.text.toString()
             if (amountStr.isNotEmpty()) {
                 val amount = amountStr.toDouble()
                 if (amount > userBalance) {
-                    Toast.makeText(this, "INSUFFICIENT GOLD IN VAULT!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "INSUFFICIENT GOLD!", Toast.LENGTH_SHORT).show()
                 } else {
                     contributeToGoal(amount)
                     dialog.dismiss()
@@ -127,35 +228,26 @@ class GoalDetailActivity : ComponentActivity() {
     }
 
     private fun contributeToGoal(amount: Double) {
-        val userId = firebaseAuth.currentUser?.uid ?: return
-        val userNodeRef = firebaseDatabase.reference.child("users").child(userId)
+        val goal = currentGoal ?: return
+        val myId = firebaseAuth.currentUser?.uid ?: return
+        val db = firebaseDatabase.reference
+        
+        val updates = hashMapOf<String, Any?>()
+        
+        // 1. Deduct from balance
+        updates["users/$myId/balance"] = userBalance - amount
+        
+        // 2. Add to central goal's saved total
+        val newSavedTotal = goal.savedGold + amount
+        updates["goals/${goal.id}/savedGold"] = newSavedTotal
+        
+        // 3. Add to central goal's contribution history
+        val contribId = db.child("goals/${goal.id}/contributionHistory").push().key ?: "c_${System.currentTimeMillis()}"
+        val contribution = Contribution(myId, "ME", amount, System.currentTimeMillis())
+        updates["goals/${goal.id}/contributionHistory/$contribId"] = contribution
 
-        userNodeRef.runTransaction(object : Transaction.Handler {
-            override fun doTransaction(currentData: MutableData): Transaction.Result {
-                val balanceVal = currentData.child("balance").getValue(Double::class.java) ?: 0.0
-                if (balanceVal < amount) return Transaction.abort()
-                
-                // 1. Deduct from monthly vault balance
-                currentData.child("balance").value = balanceVal - amount
-
-                // 2. Add to monthly expense totals under SAVINGS category
-                val savingsRef = currentData.child("expense_totals").child("SAVINGS")
-                val currentSavingsTotal = savingsRef.getValue(Double::class.java) ?: 0.0
-                savingsRef.value = currentSavingsTotal + amount
-
-                // 3. Add to specific goal's permanent saved total
-                val goalId = intent.getStringExtra("GOAL_ID") ?: return Transaction.abort()
-                val savedGoldVal = currentData.child("goals").child(goalId).child("savedGold").getValue(Double::class.java) ?: 0.0
-                currentData.child("goals").child(goalId).child("savedGold").value = savedGoldVal + amount
-
-                return Transaction.success(currentData)
-            }
-
-            override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {
-                if (committed) {
-                    Toast.makeText(this@GoalDetailActivity, "QUEST FUNDED! VAULT UPDATED.", Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
+        db.updateChildren(updates).addOnSuccessListener {
+            Toast.makeText(this, "QUEST FUNDED!", Toast.LENGTH_SHORT).show()
+        }
     }
 }
