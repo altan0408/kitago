@@ -14,7 +14,7 @@
         android:scaleType="centerCrop"
         android:contentDescription="@null" />
 
-    <!-- BACK BUTTON -->
+    <!-- TOP BAR -->
     <ImageButton
         android:id="@+id/btnBack"
         android:layout_width="48dp"
@@ -25,6 +25,31 @@
         android:contentDescription="@string/back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnEditGoal"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_edit"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Edit" />
+
+        <ImageButton
+            android:id="@+id/btnDeleteGoal"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete" />
+    </LinearLayout>
 
     <!-- GOAL TITLE -->
     <TextView
@@ -153,6 +178,17 @@
             android:text="---"
             android:textColor="@color/text_dark"
             android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvCollaborators"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/press_start_2p"
+            android:text=""
+            android:textColor="@color/gold_light"
+            android:textSize="8sp"
+            tools:ignore="SmallSp" />
     </LinearLayout>
 
     <!-- CONTRIBUTE BUTTON -->

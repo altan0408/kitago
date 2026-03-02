@@ -29,9 +29,8 @@ class ChallengesActivity : ComponentActivity() {
             finish()
         }
 
-        findViewById<TextView>(R.id.btnAction).setOnClickListener {
-            startActivity(Intent(this, CreateJoinChallengeActivity::class.java))
-        }
+        // The creation button has been removed from this screen to prevent duplicate invite flows.
+        // Users should create quests from the Goals tab using the unified CreateGoalActivity.
     }
 
     private fun loadLeaderboard() {
@@ -46,15 +45,12 @@ class ChallengesActivity : ComponentActivity() {
                     val balance = userSnap.child("balance").getValue(Double::class.java) ?: 0.0
                     val pic = userSnap.child("profilePic").getValue(String::class.java)
                     
-                    // We'll calculate total saved from goals instead
                     var totalSaved = 0.0
                     val goals = userSnap.child("goals")
                     for (goal in goals.children) {
                         totalSaved += goal.child("savedGold").getValue(Double::class.java) ?: 0.0
                     }
                     
-                    // Add to list for sorting
-                    // For now, let's just add the entry
                     addLeaderboardEntry(name, totalSaved, pic)
                 }
             }
@@ -89,6 +85,7 @@ class ChallengesActivity : ComponentActivity() {
         findViewById<ImageButton>(R.id.navHome).setOnClickListener { startActivity(Intent(this, DashboardActivity::class.java)) }
         findViewById<ImageButton>(R.id.navGoals).setOnClickListener { startActivity(Intent(this, GoalsActivity::class.java)) }
         findViewById<ImageButton>(R.id.navAdd).setOnClickListener { startActivity(Intent(this, AddTransactionActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener { }
         findViewById<ImageButton>(R.id.navProfile).setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
     }
 }

@@ -1,109 +1,96 @@
 package com.example.kitago
 
-import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
-import android.widget.*
+import android.view.LayoutInflater
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import java.util.*
+import com.bumptech.glide.Glide
+import com.google.firebase.database.*
 
 class CreateJoinChallengeActivity : ComponentActivity() {
-
-    private lateinit var firebaseAuth: FirebaseAuth
-    private lateinit var firebaseDatabase: FirebaseDatabase
-    private var selectedDeadline: String = ""
+    private lateinit var database: FirebaseDatabase
+    private lateinit var leaderboardContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_join_challenge)
 
-        firebaseAuth = FirebaseAuth.getInstance()
-        firebaseDatabase = FirebaseDatabase.getInstance()
+        database = FirebaseDatabase.getInstance()
+        leaderboardContainer = findViewById(R.id.leaderboardContainer)
 
-        val etGoalName = findViewById<EditText>(R.id.etCollabGoalName)
-        val etTargetGold = findViewById<EditText>(R.id.etCollabTargetGold)
-        val etFriendUsername = findViewById<EditText>(R.id.etFriendUsername)
-        val btnSelectDate = findViewById<LinearLayout>(R.id.btnSelectCollabDate)
-        val tvSelectedDate = findViewById<TextView>(R.id.tvCollabDate)
+        setupUI()
+        loadLeaderboard()
+    }
 
+    private fun setupUI() {
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
             finish()
         }
 
-        btnSelectDate.setOnClickListener {
-            showDatePicker(tvSelectedDate)
-        }
-
-        findViewById<TextView>(R.id.btnCreateCollabGoal).setOnClickListener {
-            val name = etGoalName.text.toString().trim()
-            val targetStr = etTargetGold.text.toString().trim()
-            val friendUsername = etFriendUsername.text.toString().trim()
-
-            if (name.isNotEmpty() && targetStr.isNotEmpty() && selectedDeadline.isNotEmpty() && friendUsername.isNotEmpty()) {
-                checkFriendAndCreate(name, targetStr.toDouble(), friendUsername)
-            } else {
-                Toast.makeText(this, "FILL ALL FIELDS!", Toast.LENGTH_SHORT).show()
-            }
+        findViewById<TextView>(R.id.btnGoToGoals).setOnClickListener {
+            startActivity(Intent(this, CreateGoalActivity::class.java))
+            finish()
         }
     }
 
-    private fun showDatePicker(tv: TextView) {
-        val calendar = Calendar.getInstance()
-        val datePickerDialog = DatePickerDialog(this, { _, year, month, dayOfMonth ->
-            selectedDeadline = "$dayOfMonth/${month + 1}/$year"
-            tv.text = selectedDeadline
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-        datePickerDialog.show()
-    }
-
-    private fun checkFriendAndCreate(name: String, target: Double, friendUsername: String) {
-        val cleanFriendName = friendUsername.lowercase().replace(" ", "_")
-        firebaseDatabase.reference.child("usernames").child(cleanFriendName).get().addOnSuccessListener { snapshot ->
-            if (snapshot.exists()) {
-                val friendId = snapshot.value.toString()
-                if (friendId == firebaseAuth.currentUser?.uid) {
-                    Toast.makeText(this, "CANNOT COLLAB WITH YOURSELF!", Toast.LENGTH_SHORT).show()
-                } else {
-                    createCollabGoal(name, target, friendId, friendUsername)
+    private fun loadLeaderboard() {
+        val usersRef = database.reference.child("users")
+        usersRef.orderByChild("balance").limitToLast(20).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                leaderboardContainer.removeAllViews()
+                
+                // Collect and sort by total saved gold in goals
+                val userList = mutableListOf<LeaderboardEntry>()
+                
+                for (userSnap in snapshot.children) {
+                    val name = userSnap.child("username").getValue(String::class.java) ?: "Adventurer"
+                    val pic = userSnap.child("profilePic").getValue(String::class.java)
+                    
+                    var totalSaved = 0.0
+                    val goals = userSnap.child("goals")
+                    for (goal in goals.children) {
+                        totalSaved += goal.child("savedGold").getValue(Double::class.java) ?: 0.0
+                    }
+                    
+                    userList.add(LeaderboardEntry(name, totalSaved, pic))
                 }
-            } else {
-                Toast.makeText(this, "FRIEND NOT FOUND!", Toast.LENGTH_SHORT).show()
+                
+                // Sort descending by score
+                userList.sortByDescending { it.score }
+                
+                userList.forEachIndexed { index, entry ->
+                    addLeaderboardEntry(index + 1, entry)
+                }
             }
-        }
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
-    private fun createCollabGoal(name: String, target: Double, friendId: String, friendName: String) {
-        val userId = firebaseAuth.currentUser?.uid ?: return
-        val creatorName = firebaseAuth.currentUser?.displayName ?: "Owner"
+    private fun addLeaderboardEntry(rank: Int, entry: LeaderboardEntry) {
+        val view = LayoutInflater.from(this).inflate(R.layout.item_leaderboard, leaderboardContainer, false)
         
-        val goalsRef = firebaseDatabase.reference.child("users").child(userId).child("goals")
-        val friendGoalsRef = firebaseDatabase.reference.child("users").child(friendId).child("goals")
+        view.findViewById<TextView>(R.id.tvRank).text = "$rank."
+        view.findViewById<TextView>(R.id.tvLeaderboardName).text = entry.name.uppercase()
+        view.findViewById<TextView>(R.id.tvLeaderboardScore).text = "₱${entry.score.toInt()}"
         
-        val goalId = goalsRef.push().key ?: return
-
-        val newGoal = Goal(
-            id = goalId,
-            name = name,
-            targetGold = target,
-            savedGold = 0.0,
-            deadline = selectedDeadline,
-            isCollaborative = true,
-            creatorId = userId,
-            collaboratorId = friendId,
-            collaboratorName = friendName,
-            status = "ACTIVE"
-        )
-
-        // Save to both users
-        val task1 = goalsRef.child(goalId).setValue(newGoal)
-        val task2 = friendGoalsRef.child(goalId).setValue(newGoal.copy(collaboratorName = creatorName))
-
-        task1.addOnCompleteListener {
-            if (it.isSuccessful) {
-                Toast.makeText(this, "COLLAB QUEST STARTED!", Toast.LENGTH_SHORT).show()
-                finish()
+        val avatar = view.findViewById<ImageView>(R.id.ivLeaderboardAvatar)
+        if (!entry.pic.isNullOrEmpty()) {
+            if (entry.pic.startsWith("http")) Glide.with(this).load(entry.pic).circleCrop().into(avatar)
+            else {
+                try {
+                    val bytes = android.util.Base64.decode(entry.pic, android.util.Base64.DEFAULT)
+                    val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    Glide.with(this).load(bitmap).circleCrop().into(avatar)
+                } catch (e: Exception) { avatar.setImageResource(R.drawable.logo_kitago_main) }
             }
         }
+        
+        leaderboardContainer.addView(view)
     }
+
+    data class LeaderboardEntry(val name: String, val score: Double, val pic: String?)
 }
