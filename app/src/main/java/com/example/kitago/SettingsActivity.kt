@@ -42,17 +42,17 @@ class SettingsActivity : ComponentActivity() {
         switchSfx.isChecked = prefs.getBoolean(KEY_SFX, true)
 
         switchMusic.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit { putBoolean(KEY_MUSIC, isChecked) }
+            prefs.edit().putBoolean(KEY_MUSIC, isChecked).apply()
         }
         switchSfx.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit { putBoolean(KEY_SFX, isChecked) }
+            prefs.edit().putBoolean(KEY_SFX, isChecked).apply()
         }
 
         // --- System Toggles ---
         val switchAlerts = findViewById<SwitchCompat>(R.id.switchAlerts)
         switchAlerts.isChecked = prefs.getBoolean(KEY_ALERTS, true)
         switchAlerts.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit { putBoolean(KEY_ALERTS, isChecked) }
+            prefs.edit().putBoolean(KEY_ALERTS, isChecked).apply()
         }
 
         // --- Language Selector ---
@@ -97,7 +97,7 @@ class SettingsActivity : ComponentActivity() {
                 )
                 background = AppCompatResources.getDrawable(this@SettingsActivity, R.drawable.bg_button_gold)
                 setOnClickListener {
-                    prefs.edit { putString(KEY_LANGUAGE, lang) }
+                    prefs.edit().putString(KEY_LANGUAGE, lang).apply()
                     tvLanguage.text = lang
                     Toast.makeText(this@SettingsActivity, "LANGUAGE SET TO $lang", Toast.LENGTH_SHORT).show()
                     dialog.dismiss()

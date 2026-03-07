@@ -27,15 +27,13 @@ class SignupActivity : ComponentActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
 
     private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)!!
-                firebaseAuthWithGoogle(account.idToken!!)
-            } catch (e: ApiException) {
-                Log.w("SignupActivity", "Google sign in failed", e)
-                Toast.makeText(this, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
-            }
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)!!
+            firebaseAuthWithGoogle(account.idToken!!)
+        } catch (e: ApiException) {
+            Log.w("SignupActivity", "Google sign in failed, code=${e.statusCode}", e)
+            Toast.makeText(this, "Google Sign-In failed (code: ${e.statusCode})", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -95,8 +93,10 @@ class SignupActivity : ComponentActivity() {
 
         // GOOGLE SIGN UP
         ivGoogle.setOnClickListener {
-            val signInIntent = googleSignInClient.signInIntent
-            googleSignInLauncher.launch(signInIntent)
+            googleSignInClient.signOut().addOnCompleteListener {
+                val signInIntent = googleSignInClient.signInIntent
+                googleSignInLauncher.launch(signInIntent)
+            }
         }
 
         // LOGIN HERE LINK
