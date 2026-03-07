@@ -1,0 +1,122 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid",
+
+        "username": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30" },
+        "email": { ".validate": "newData.isString()" },
+        "profilePic": { ".validate": "newData.isString()" },
+        "balance": { ".validate": "newData.isNumber()" },
+        "level": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 50" },
+        "xp": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "wins": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "streak": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "totalSavedGold": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "lastResetMonth": { ".validate": "newData.isString()" },
+
+        "expense_totals": {
+          "$category": { ".validate": "newData.isNumber()" }
+        },
+        "income_totals": {
+          "$category": { ".validate": "newData.isNumber()" }
+        },
+        "goals": {
+          ".write": "auth != null",
+          "$goalId": { ".validate": "newData.isString()" }
+        },
+        "friends": {
+          ".write": "auth != null",
+          "$friendId": { ".validate": "newData.isBoolean()" }
+        },
+        "goal_streaks": {
+          "$goalId": {
+            "current": { ".validate": "newData.isNumber()" },
+            "dates": {
+              "$date": { ".validate": "newData.isBoolean()" }
+            }
+          }
+        },
+        "badges": {
+          "$badgeId": { ".validate": "newData.isString() || newData.isBoolean()" }
+        }
+      },
+      ".indexOn": ["totalSavedGold", "username"]
+    },
+
+    "usernames": {
+      ".read": "auth != null",
+      "$username": {
+        ".write": "auth != null",
+        ".validate": "newData.isString()"
+      }
+    },
+
+    "goals": {
+      ".read": "auth != null",
+      "$goalId": {
+        ".write": "auth != null",
+
+        "id": { ".validate": "newData.isString()" },
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" },
+        "targetGold": { ".validate": "newData.isNumber() && newData.val() > 0" },
+        "savedGold": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "deadline": { ".validate": "newData.isString()" },
+        "isCollaborative": { ".validate": "newData.isBoolean()" },
+        "creatorId": { ".validate": "newData.isString()" },
+        "creatorName": { ".validate": "newData.isString()" },
+        "status": { ".validate": "newData.isString() && (newData.val() == 'ACTIVE' || newData.val() == 'COMPLETED')" },
+        "streak": { ".validate": "newData.isNumber()" },
+        "lastContributionDate": { ".validate": "newData.isString()" },
+        "collabStreak": { ".validate": "newData.isNumber()" },
+        "collabLastFullDate": { ".validate": "newData.isString()" },
+
+        "collaboratorStatuses": {
+          "$uid": { ".validate": "newData.isString() && (newData.val() == 'PENDING' || newData.val() == 'ACCEPTED' || newData.val() == 'DECLINED')" }
+        },
+        "collaboratorNames": {
+          "$uid": { ".validate": "newData.isString()" }
+        },
+        "collabDailyContributors": {
+          "$date": {
+            "$uid": { ".validate": "newData.isBoolean()" }
+          }
+        },
+        "contributionHistory": {
+          "$contributionId": {
+            "userId": { ".validate": "newData.isString()" },
+            "userName": { ".validate": "newData.isString()" },
+            "amount": { ".validate": "newData.isNumber() && newData.val() > 0" },
+            "timestamp": { ".validate": "newData.isNumber()" }
+          }
+        }
+      }
+    },
+
+    "challenge_requests": {
+      "$targetUserId": {
+        ".read": "auth != null && auth.uid == $targetUserId",
+        ".write": "auth != null",
+        "$goalId": {
+          "goalId": { ".validate": "newData.isString()" },
+          "goalName": { ".validate": "newData.isString()" },
+          "targetGold": { ".validate": "newData.isNumber()" },
+          "creatorName": { ".validate": "newData.isString()" },
+          "timestamp": { ".validate": "newData.isNumber()" }
+        }
+      }
+    },
+
+    "friend_requests": {
+      "$targetUserId": {
+        ".read": "auth != null && auth.uid == $targetUserId",
+        ".write": "auth != null",
+        "$senderId": {
+          ".validate": "newData.isString()"
+        }
+      }
+    }
+  }
+}
+

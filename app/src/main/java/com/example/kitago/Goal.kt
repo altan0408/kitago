@@ -40,6 +40,12 @@ data class Goal(
     val streak: Int = 0,
     val lastContributionDate: String = "",
     
+    // Collab streak: tracks when ALL accepted collaborators contribute daily
+    val collabStreak: Int = 0,
+    val collabLastFullDate: String = "",
+    // Map of date -> Map of uid -> true (who contributed each day)
+    val collabDailyContributors: Map<String, Map<String, Boolean>> = emptyMap(),
+
     // Map of contributionId to Contribution object
     val contributionHistory: Map<String, Contribution> = emptyMap()
 )

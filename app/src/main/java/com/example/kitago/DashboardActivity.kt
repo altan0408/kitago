@@ -1,5 +1,6 @@
 package com.example.kitago
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -8,11 +9,11 @@ import android.view.View
 import android.widget.*
 import androidx.activity.ComponentActivity
 import androidx.core.content.res.ResourcesCompat
-import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.util.*
 
+@SuppressLint("SetTextI18n")
 class DashboardActivity : ComponentActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
@@ -97,8 +98,8 @@ class DashboardActivity : ComponentActivity() {
                 val profilePicUrl = snapshot.child("profilePic").getValue(String::class.java)
 
                 findViewById<TextView>(R.id.tvUsername).text = username.uppercase()
-                findViewById<TextView>(R.id.tvBalance).text = String.format("₱%.2f", balance)
-                
+                findViewById<TextView>(R.id.tvBalance).text = String.format(Locale.getDefault(), "₱%.2f", balance)
+
                 loadProfileImage(profilePicUrl, findViewById(R.id.ivAvatar))
 
                 // Monthly Summary
@@ -156,7 +157,7 @@ class DashboardActivity : ComponentActivity() {
                     
                     loadedCount++
                     if (loadedCount == goalIds.size) {
-                        findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format("₱%.2f", totalQuestSaved)
+                        findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format(Locale.getDefault(), "₱%.2f", totalQuestSaved)
                         lastIncompleteGoal?.let { updateGoalPreview(it) } ?: run {
                             findViewById<TextView>(R.id.tvPreviewGoalName).text = "NO ACTIVE QUESTS"
                             findViewById<ProgressBar>(R.id.previewGoalProgress).progress = 0
@@ -177,16 +178,7 @@ class DashboardActivity : ComponentActivity() {
     }
 
     private fun loadProfileImage(data: String?, imageView: ImageView) {
-        if (data == null) { imageView.setImageResource(R.drawable.logo_kitago_main); return }
-        if (data.startsWith("http")) {
-            Glide.with(this).load(data).circleCrop().placeholder(R.drawable.logo_kitago_main).into(imageView)
-        } else {
-            try {
-                val androidUtilBase64 = android.util.Base64.decode(data, android.util.Base64.DEFAULT)
-                val bitmap = android.graphics.BitmapFactory.decodeByteArray(androidUtilBase64, 0, androidUtilBase64.size)
-                Glide.with(this).load(bitmap).circleCrop().into(imageView)
-            } catch (e: Exception) { imageView.setImageResource(R.drawable.logo_kitago_main) }
-        }
+        ImageUtils.loadProfileImage(this, data, imageView)
     }
 
     private fun showAddBalanceDialog() {
@@ -201,9 +193,22 @@ class DashboardActivity : ComponentActivity() {
         (dialogView as LinearLayout).addView(input, 2)
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "DEPOSIT"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener {
-            val amountStr = input.text.toString()
-            if (amountStr.isNotEmpty()) {
-                DataManager.syncUpdateBalance(amountStr.toDouble(), true) { dialog.dismiss() }
+            val amountStr = input.text.toString().trim()
+            if (amountStr.isEmpty()) {
+                Toast.makeText(this, "ENTER AN AMOUNT!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val amount = amountStr.toDoubleOrNull()
+            if (amount == null || amount <= 0) {
+                Toast.makeText(this, "ENTER A VALID AMOUNT!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (amount > 1000000) {
+                Toast.makeText(this, "AMOUNT TOO LARGE!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            DataManager.syncUpdateBalance(amount, true) {
+                runOnUiThread { dialog.dismiss() }
             }
         }
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)

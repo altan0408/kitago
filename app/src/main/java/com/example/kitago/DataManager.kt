@@ -1,6 +1,5 @@
 package com.example.kitago
 
-import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.text.SimpleDateFormat
@@ -12,19 +11,9 @@ object DataManager {
     private const val XP_PER_CONTRIBUTION = 100
     private const val XP_STREAK_BONUS = 250
     private const val XP_GOAL_COMPLETED = 1500
+    private const val XP_COLLAB_STREAK_BONUS = 300
 
     fun getXpNeededForLevel(level: Int): Int = level * 750
-
-    fun getLevelTitle(level: Int): String {
-        return when {
-            level >= 40 -> "LEGENDARY TREASURER"
-            level >= 30 -> "DRAGON HOARDER"
-            level >= 20 -> "QUEST MASTER"
-            level >= 10 -> "ELITE ADVENTURER"
-            level >= 5 -> "SKILLED SAVER"
-            else -> "NOVICE"
-        }
-    }
 
     fun syncUpdateBalance(amount: Double, isIncome: Boolean, onComplete: (Boolean) -> Unit = {}) {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
@@ -47,71 +36,220 @@ object DataManager {
         })
     }
 
-    fun handleContribution(amount: Double, goalId: String, goal: Goal, onComplete: (Boolean) -> Unit) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: "User"
-        val db = FirebaseDatabase.getInstance().reference
+    @Suppress("UNUSED_PARAMETER")
+    fun syncAddTransaction(amount: Double, category: String, note: String, isIncome: Boolean, onComplete: (Boolean) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+        val userRef = FirebaseDatabase.getInstance().reference.child("users").child(currentUser.uid)
 
-        val transactionId = db.push().key ?: "c_${System.currentTimeMillis()}"
-        val contribution = Contribution(uid, userName, amount, System.currentTimeMillis())
-
-        val updates = hashMapOf<String, Any?>()
-        val newSavedTotal = goal.savedGold + amount
-        updates["goals/$goalId/savedGold"] = newSavedTotal
-        updates["goals/$goalId/contributionHistory/$transactionId"] = contribution
-        
-        if (newSavedTotal >= goal.targetGold && goal.status != "COMPLETED") {
-            updates["goals/$goalId/status"] = "COMPLETED"
-        }
-
-        db.child("users").child(uid).runTransaction(object : Transaction.Handler {
+        userRef.runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
                 val balance = currentData.child("balance").getValue(Double::class.java) ?: 0.0
-                if (balance < amount) return Transaction.abort()
+                currentData.child("balance").value = if (isIncome) balance + amount else balance - amount
 
-                // 1. Deduct Balance
-                currentData.child("balance").value = balance - amount
-                
-                // 2. Update Total Saved for Leaderboards
-                val totalSavedEver = currentData.child("totalSavedGold").getValue(Double::class.java) ?: 0.0
-                currentData.child("totalSavedGold").value = totalSavedEver + amount
+                val totalNode = if (isIncome) "income_totals" else "expense_totals"
+                val catRef = currentData.child(totalNode).child(category)
+                val currentTotal = catRef.getValue(Double::class.java) ?: 0.0
+                catRef.value = currentTotal + amount
 
-                // 3. XP and Stats
-                if (newSavedTotal >= goal.targetGold && goal.status != "COMPLETED") {
-                    addXp(currentData, XP_GOAL_COMPLETED)
-                    val wins = currentData.child("wins").getValue(Int::class.java) ?: 0
-                    currentData.child("wins").value = wins + 1
-                    awardBadge(currentData, "goal_$goalId", "Mastered: ${goal.name}")
-                }
-                
-                handleStreakAndXp(currentData, goalId)
+                addXp(currentData, if (isIncome) XP_PER_DEPOSIT else 20)
                 return Transaction.success(currentData)
             }
-
-            override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {
-                if (committed) {
-                    db.updateChildren(updates).addOnCompleteListener { onComplete(it.isSuccessful) }
-                } else {
-                    onComplete(false)
-                }
+            override fun onComplete(e: DatabaseError?, c: Boolean, s: DataSnapshot?) {
+                onComplete(c)
             }
         })
     }
 
+    fun handleContribution(amount: Double, goalId: String, goal: Goal, onComplete: (Boolean) -> Unit) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val db = FirebaseDatabase.getInstance().reference
+
+        // Fetch the user's display name from DB for accuracy
+        db.child("users").child(uid).child("username").get().addOnSuccessListener { nameSnap ->
+            val userName = nameSnap.getValue(String::class.java) ?: "Adventurer"
+
+            val transactionId = db.push().key ?: "c_${System.currentTimeMillis()}"
+            val contribution = Contribution(uid, userName, amount, System.currentTimeMillis())
+
+            val updates = hashMapOf<String, Any?>()
+            val newSavedTotal = goal.savedGold + amount
+            updates["goals/$goalId/savedGold"] = newSavedTotal
+            updates["goals/$goalId/contributionHistory/$transactionId"] = contribution
+
+            if (newSavedTotal >= goal.targetGold && goal.status != "COMPLETED") {
+                updates["goals/$goalId/status"] = "COMPLETED"
+            }
+
+            // Track collab daily contributor
+            if (goal.isCollaborative) {
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val today = sdf.format(Date())
+                updates["goals/$goalId/collabDailyContributors/$today/$uid"] = true
+            }
+
+            db.child("users").child(uid).runTransaction(object : Transaction.Handler {
+                override fun doTransaction(currentData: MutableData): Transaction.Result {
+                    val balance = currentData.child("balance").getValue(Double::class.java) ?: 0.0
+                    if (balance < amount) return Transaction.abort()
+
+                    currentData.child("balance").value = balance - amount
+
+                    val totalSavedEver = currentData.child("totalSavedGold").getValue(Double::class.java) ?: 0.0
+                    currentData.child("totalSavedGold").value = totalSavedEver + amount
+
+                    if (newSavedTotal >= goal.targetGold && goal.status != "COMPLETED") {
+                        addXp(currentData, XP_GOAL_COMPLETED)
+                        val wins = currentData.child("wins").getValue(Int::class.java) ?: 0
+                        currentData.child("wins").value = wins + 1
+                    }
+
+                    handleStreakAndXp(currentData, goalId)
+                    return Transaction.success(currentData)
+                }
+
+                override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {
+                    if (committed) {
+                        db.updateChildren(updates).addOnCompleteListener { task ->
+                            if (task.isSuccessful && goal.isCollaborative) {
+                                updateCollabStreak(goalId, goal)
+                            }
+                            onComplete(task.isSuccessful)
+                        }
+                    } else {
+                        onComplete(false)
+                    }
+                }
+            })
+        }
+    }
+
+    /**
+     * Updates the collaborative streak for a goal.
+     * Checks if ALL accepted collaborators have contributed today.
+     * If yes, increments the collab streak (or starts it at 1 if broken).
+     */
+    private fun updateCollabStreak(goalId: String, goal: Goal) {
+        val db = FirebaseDatabase.getInstance().reference
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val today = sdf.format(Date())
+
+        val acceptedCollaborators = goal.collaboratorStatuses.filter { it.value == "ACCEPTED" }.keys
+
+        db.child("goals").child(goalId).child("collabDailyContributors").child(today)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val todayContributors = snapshot.children.mapNotNull { it.key }.toSet()
+                    val allContributed = acceptedCollaborators.all { it in todayContributors }
+
+                    if (allContributed && acceptedCollaborators.size >= 2) {
+                        // Check if yesterday also had a full day
+                        val cal = Calendar.getInstance()
+                        cal.add(Calendar.DATE, -1)
+                        val yesterday = sdf.format(cal.time)
+
+                        db.child("goals").child(goalId).get().addOnSuccessListener { goalSnap ->
+                            val lastFullDate = goalSnap.child("collabLastFullDate").getValue(String::class.java) ?: ""
+                            val currentCollabStreak = goalSnap.child("collabStreak").getValue(Int::class.java) ?: 0
+
+                            // Already counted today
+                            if (lastFullDate == today) return@addOnSuccessListener
+
+                            val newStreak = if (lastFullDate == yesterday) currentCollabStreak + 1 else 1
+
+                            val streakUpdates = hashMapOf<String, Any?>(
+                                "goals/$goalId/collabStreak" to newStreak,
+                                "goals/$goalId/collabLastFullDate" to today
+                            )
+                            db.updateChildren(streakUpdates)
+
+                            // Award collab streak bonus XP to all accepted collaborators
+                            if (newStreak >= 3) {
+                                for (uid in acceptedCollaborators) {
+                                    db.child("users").child(uid).runTransaction(object : Transaction.Handler {
+                                        override fun doTransaction(data: MutableData): Transaction.Result {
+                                            addXp(data, XP_COLLAB_STREAK_BONUS)
+                                            return Transaction.success(data)
+                                        }
+                                        override fun onComplete(e: DatabaseError?, c: Boolean, s: DataSnapshot?) {}
+                                    })
+                                }
+                            }
+                        }
+                    }
+                }
+                override fun onCancelled(error: DatabaseError) {}
+            })
+    }
+
+    /**
+     * Unified method to respond to a challenge/quest invite.
+     * Handles ACCEPTED, DECLINED, and CANCELLED statuses.
+     * CANCELLED removes the goal entirely for all collaborators.
+     */
+    fun respondToChallenge(goalId: String, goal: Goal?, status: String, onComplete: (Boolean) -> Unit = {}) {
+        val myId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val db = FirebaseDatabase.getInstance().reference
+        val updates = hashMapOf<String, Any?>()
+
+        when (status) {
+            "ACCEPTED" -> {
+                updates["goals/$goalId/collaboratorStatuses/$myId"] = "ACCEPTED"
+                updates["users/$myId/goals/$goalId"] = "ACCEPTED"
+                updates["challenge_requests/$myId/$goalId"] = null
+            }
+            "DECLINED" -> {
+                updates["goals/$goalId/collaboratorStatuses/$myId"] = "DECLINED"
+                updates["users/$myId/goals/$goalId"] = null
+                updates["challenge_requests/$myId/$goalId"] = null
+            }
+            "CANCELLED" -> {
+                updates["goals/$goalId"] = null
+                goal?.collaboratorStatuses?.keys?.forEach { uid ->
+                    updates["users/$uid/goals/$goalId"] = null
+                    updates["challenge_requests/$uid/$goalId"] = null
+                }
+                // Also remove for the current user if not already in collaborators
+                updates["users/$myId/goals/$goalId"] = null
+            }
+        }
+
+        db.updateChildren(updates).addOnSuccessListener {
+            onComplete(true)
+        }.addOnFailureListener {
+            onComplete(false)
+        }
+    }
+
+    /**
+     * Sends a challenge request notification to a collaborator.
+     */
+    fun sendChallengeRequest(goalId: String, goalName: String, targetGold: Double, creatorName: String, collaboratorId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        val requestData = hashMapOf<String, Any>(
+            "goalId" to goalId,
+            "goalName" to goalName,
+            "targetGold" to targetGold,
+            "creatorName" to creatorName,
+            "timestamp" to ServerValue.TIMESTAMP
+        )
+        db.child("challenge_requests").child(collaboratorId).child(goalId).setValue(requestData)
+    }
+
+
     private fun handleStreakAndXp(userNode: MutableData, goalId: String) {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val today = sdf.format(Date())
-        
+
         val userStreaks = userNode.child("goal_streaks").child(goalId)
         val contributionDates = userStreaks.child("dates")
-        
+
         if (contributionDates.child(today).value != null) {
             addXp(userNode, XP_PER_CONTRIBUTION)
             return
         }
 
         contributionDates.child(today).value = true
-        
+
         var streak = 1
         val cal = Calendar.getInstance()
         while (true) {
@@ -125,34 +263,26 @@ object DataManager {
         }
 
         userStreaks.child("current").value = streak
-        
-        // Global highest streak
+
         val globalHighest = userNode.child("streak").getValue(Int::class.java) ?: 0
         if (streak > globalHighest) userNode.child("streak").value = streak
 
         val bonus = if (streak >= 3) XP_STREAK_BONUS else 0
         addXp(userNode, XP_PER_CONTRIBUTION + bonus)
-        
-        if (streak == 7) awardBadge(userNode, "week_streak_$goalId", "Unstoppable Week!")
     }
 
     fun addXp(userData: MutableData, amount: Int) {
         var xp = userData.child("xp").getValue(Int::class.java) ?: 0
         var level = userData.child("level").getValue(Int::class.java) ?: 1
-        
+
         if (level >= MAX_LEVEL) return
 
         xp += amount
         while (xp >= getXpNeededForLevel(level) && level < MAX_LEVEL) {
             xp -= getXpNeededForLevel(level)
             level++
-            awardBadge(userData, "lvl_$level", "Reached Level $level!")
         }
         userData.child("xp").value = xp
         userData.child("level").value = level
-    }
-
-    fun awardBadge(userData: MutableData, id: String, desc: String) {
-        userData.child("badges").child(id).value = desc
     }
 }

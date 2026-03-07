@@ -1,5 +1,6 @@
 package com.example.kitago
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,13 +15,15 @@ import android.widget.*
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.res.ResourcesCompat
-import com.bumptech.glide.Glide
+import androidx.core.graphics.scale
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.io.ByteArrayOutputStream
 
+@SuppressLint("SetTextI18n")
+@Suppress("DEPRECATION")
 class ProfileActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
@@ -83,7 +86,7 @@ class ProfileActivity : ComponentActivity() {
                 imagePickerLauncher.launch(intent)
             }
             findViewById<ImageButton>(R.id.btnAddFriend).setOnClickListener { showAddFriendDialog() }
-            findViewById<TextView>(R.id.btnSignOut).setOnClickListener { signOut() }
+            findViewById<TextView>(R.id.btnSignOut).setOnClickListener { showSignOutDialog() }
             findViewById<TextView>(R.id.btnUnfriend).visibility = View.GONE
         }
     }
@@ -100,16 +103,20 @@ class ProfileActivity : ComponentActivity() {
                 val streak = snapshot.child("streak").getValue(Int::class.java) ?: 0
                 val xp = snapshot.child("xp").getValue(Int::class.java) ?: 0
                 val pic = snapshot.child("profilePic").getValue(String::class.java)
+                val totalSaved = snapshot.child("totalSavedGold").getValue(Double::class.java) ?: 0.0
 
                 findViewById<TextView>(R.id.tvUsernameProfile).text = currentUsername!!.uppercase()
                 findViewById<TextView>(R.id.tvEmailProfile).text = email
                 findViewById<TextView>(R.id.tvLevel).text = "LEVEL $level"
                 findViewById<TextView>(R.id.tvWins).text = "WINS: $wins"
-                findViewById<TextView>(R.id.tvStreak).text = "STREAK: $streak DAYS"
-                
+                findViewById<TextView>(R.id.tvStreak).text = "\uD83D\uDD25 STREAK: $streak DAYS"
+                findViewById<TextView>(R.id.tvTotalSaved).text = "TOTAL SAVED: ₱${totalSaved.toInt()}"
+
+                val xpNeeded = DataManager.getXpNeededForLevel(level)
                 val xpBar = findViewById<ProgressBar>(R.id.profileXpBar)
-                xpBar.max = level * 500
+                xpBar.max = xpNeeded
                 xpBar.progress = xp
+                findViewById<TextView>(R.id.tvXpLabel).text = "$xp / $xpNeeded XP"
 
                 loadProfileImage(pic, findViewById(R.id.ivLargeAvatar))
                 loadFriends(snapshot.child("friends"))
@@ -161,8 +168,19 @@ class ProfileActivity : ComponentActivity() {
         dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "REMOVE $currentUsername?"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
             text = "UNFRIEND"
+            setBackgroundResource(R.drawable.bg_button_orange)
             setOnClickListener { unfriendUser(); dialog.dismiss() }
         }
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        (dialogView as LinearLayout).addView(btnCancel)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
@@ -243,17 +261,10 @@ class ProfileActivity : ComponentActivity() {
     }
 
     private fun loadProfileImage(data: String?, imageView: ImageView) {
-        if (data == null) { imageView.setImageResource(R.drawable.logo_kitago_main); return }
-        if (data.startsWith("http")) Glide.with(this).load(data).circleCrop().into(imageView)
-        else {
-            try {
-                val bytes = Base64.decode(data, Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                Glide.with(this).load(bitmap).circleCrop().into(imageView)
-            } catch (e: Exception) { imageView.setImageResource(R.drawable.logo_kitago_main) }
-        }
+        ImageUtils.loadProfileImage(this, data, imageView)
     }
 
+    @Suppress("UNUSED_VARIABLE")
     private fun loadBadges(badgesSnapshot: DataSnapshot) {
         val grid = findViewById<GridLayout>(R.id.badgeGrid)
         grid.removeAllViews()
@@ -297,11 +308,35 @@ class ProfileActivity : ComponentActivity() {
         try {
             val inputStream = contentResolver.openInputStream(uri)
             val bitmap = BitmapFactory.decodeStream(inputStream)
-            val scaled = Bitmap.createScaledBitmap(bitmap, 200, 200, true)
+            val scaled = bitmap.scale(200, 200, true)
             val out = ByteArrayOutputStream()
             scaled.compress(Bitmap.CompressFormat.JPEG, 70, out)
             userRef.child("profilePic").setValue(Base64.encodeToString(out.toByteArray(), Base64.DEFAULT))
-        } catch (e: Exception) {}
+        } catch (_: Exception) {}
+    }
+
+    private fun showSignOutDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "SIGN OUT"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ARE YOU SURE YOU WANT TO SIGN OUT?"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "SIGN OUT"
+            setBackgroundResource(R.drawable.bg_button_orange)
+            setOnClickListener { signOut(); dialog.dismiss() }
+        }
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        (dialogView as LinearLayout).addView(btnCancel)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
     }
 
     private fun signOut() {
@@ -321,5 +356,6 @@ class ProfileActivity : ComponentActivity() {
         findViewById<ImageButton>(R.id.navGoals).setOnClickListener { startActivity(Intent(this, GoalsActivity::class.java)) }
         findViewById<ImageButton>(R.id.navAdd).setOnClickListener { startActivity(Intent(this, AddTransactionActivity::class.java)) }
         findViewById<ImageButton>(R.id.navChallenges).setOnClickListener { startActivity(Intent(this, ChallengesActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navProfile).setOnClickListener { /* Already on profile */ }
     }
 }

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="12dp"
+    android:padding="10dp"
     android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground">
 
@@ -13,13 +14,14 @@
         android:layout_height="44dp"
         android:src="@drawable/logo_kitago_main"
         android:background="@drawable/bg_button_gold"
-        android:padding="4dp" />
+        android:padding="3dp"
+        android:contentDescription="@string/user_avatar_description" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="12dp"
         android:orientation="vertical">
 
         <TextView
@@ -27,19 +29,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/press_start_2p"
-            android:text="FRIEND"
+            android:text="@string/friend_placeholder"
             android:textColor="#000000"
-            android:textSize="10sp" />
+            android:textSize="9sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:ignore="SmallSp" />
 
         <TextView
             android:id="@+id/tvFriendLevel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="3dp"
             android:fontFamily="@font/press_start_2p"
-            android:text="LVL 1"
+            android:text="@string/lvl_placeholder"
             android:textColor="@color/gold_dark"
-            android:textSize="8sp" />
+            android:textSize="7sp"
+            tools:ignore="SmallSp" />
     </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chevron"
+        android:textColor="@color/text_muted"
+        android:textSize="10sp"
+        tools:ignore="SmallSp" />
 
 </LinearLayout>

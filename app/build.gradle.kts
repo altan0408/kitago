@@ -38,6 +38,10 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        disable += "SetTextI18n"
+        disable += "HardcodedText"
+    }
 }
 
 dependencies {

@@ -4,49 +4,61 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingVertical="12dp"
+    android:paddingVertical="10dp"
+    android:paddingHorizontal="4dp"
     android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/tvRank"
-        android:layout_width="32dp"
+        android:layout_width="36dp"
         android:layout_height="wrap_content"
         android:fontFamily="@font/press_start_2p"
-        android:text="1."
+        android:text="@string/rank_placeholder"
         android:textColor="@color/gold_dark"
-        android:textSize="12sp"
+        android:textSize="11sp"
+        android:gravity="center"
         tools:ignore="SmallSp" />
 
     <ImageView
         android:id="@+id/ivLeaderboardAvatar"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="4dp"
         android:src="@drawable/logo_kitago_main"
         android:background="@drawable/bg_button_gold"
-        android:padding="4dp"
-        android:contentDescription="@null" />
+        android:padding="3dp"
+        android:contentDescription="@string/user_avatar_description" />
 
-    <TextView
-        android:id="@+id/tvLeaderboardName"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="16dp"
-        android:fontFamily="@font/press_start_2p"
-        android:text="PLAYER"
-        android:textColor="@color/text_dark"
-        android:textSize="10sp"
-        tools:ignore="SmallSp" />
+        android:layout_marginStart="12dp"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvLeaderboardScore"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/press_start_2p"
-        android:text="₱0"
-        android:textColor="@color/hp_green"
-        android:textSize="12sp"
-        tools:ignore="SmallSp" />
+        <TextView
+            android:id="@+id/tvLeaderboardName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/press_start_2p"
+            android:text="@string/player_placeholder"
+            android:textColor="@color/text_dark"
+            android:textSize="9sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:ignore="SmallSp" />
+
+        <TextView
+            android:id="@+id/tvLeaderboardScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/press_start_2p"
+            android:text="@string/gold_placeholder"
+            android:textColor="@color/hp_green"
+            android:textSize="8sp"
+            tools:ignore="SmallSp" />
+    </LinearLayout>
 
 </LinearLayout>

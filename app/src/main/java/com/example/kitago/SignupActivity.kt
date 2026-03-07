@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 
+@Suppress("DEPRECATION")
 class SignupActivity : ComponentActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth

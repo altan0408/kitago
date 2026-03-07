@@ -96,6 +96,7 @@
                         android:layout_centerVertical="true"
                         tools:ignore="SmallSp" />
                     <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switchMusic"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
@@ -115,6 +116,7 @@
                         android:layout_centerVertical="true"
                         tools:ignore="SmallSp" />
                     <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switchSfx"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
@@ -158,6 +160,7 @@
                         android:layout_centerVertical="true"
                         tools:ignore="SmallSp" />
                     <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switchAlerts"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
@@ -177,6 +180,7 @@
                         android:layout_centerVertical="true"
                         tools:ignore="SmallSp" />
                     <TextView
+                        android:id="@+id/tvLanguageValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
@@ -184,12 +188,17 @@
                         android:text="ENG"
                         android:textColor="#000000"
                         android:textSize="10sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="8dp"
                         tools:ignore="SmallSp" />
                 </RelativeLayout>
             </LinearLayout>
 
             <!-- DATA MANAGEMENT -->
             <TextView
+                android:id="@+id/btnResetProgress"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:background="@drawable/bg_button_orange"

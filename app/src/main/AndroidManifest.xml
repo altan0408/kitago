@@ -19,7 +19,6 @@
 
         <activity android:name=".LoginActivity" />
         <activity android:name=".SignupActivity" />
-        <activity android:name=".MainMenuActivity" />
         <activity android:name=".DashboardActivity" />
         <activity android:name=".GoalsActivity" />
         <activity android:name=".GoalDetailActivity" />

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -15,9 +16,12 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:fontFamily="@font/press_start_2p"
-        android:text="PLAYER"
+        android:text="@string/player_placeholder"
         android:textColor="@color/text_dark"
-        android:textSize="10sp" />
+        android:textSize="9sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        tools:ignore="SmallSp" />
 
     <ImageButton
         android:id="@+id/btnAccept"
@@ -26,6 +30,7 @@
         android:src="@android:drawable/ic_menu_save"
         android:background="@drawable/bg_button_green"
         android:layout_marginEnd="8dp"
+        android:contentDescription="@string/accept_challenge"
         app:tint="@color/white" />
 
     <ImageButton
@@ -34,6 +39,7 @@
         android:layout_height="36dp"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         android:background="@drawable/bg_button_orange"
+        android:contentDescription="@string/reject_challenge"
         app:tint="@color/white" />
 
 </LinearLayout>

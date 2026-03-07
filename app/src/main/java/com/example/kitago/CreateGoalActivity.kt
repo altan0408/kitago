@@ -1,5 +1,6 @@
 package com.example.kitago
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.os.Bundle
@@ -13,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.util.*
 
+@SuppressLint("SetTextI18n")
 class CreateGoalActivity : ComponentActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
@@ -77,6 +79,7 @@ class CreateGoalActivity : ComponentActivity() {
             tv.text = selectedDeadline
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
         
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis()
         datePickerDialog.show()
     }
 
@@ -174,6 +177,16 @@ class CreateGoalActivity : ComponentActivity() {
 
         db.updateChildren(updates).addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                // Send challenge request notification for collab goals
+                if (isCollab && selectedCollaboratorId != null) {
+                    DataManager.sendChallengeRequest(
+                        goalId = goalId,
+                        goalName = name,
+                        targetGold = target,
+                        creatorName = myUsername,
+                        collaboratorId = selectedCollaboratorId!!
+                    )
+                }
                 Toast.makeText(this, if (isCollab) "INVITATION SENT!" else "QUEST STARTED!", Toast.LENGTH_SHORT).show()
                 finish()
             } else {

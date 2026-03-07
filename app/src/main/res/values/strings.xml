@@ -100,6 +100,33 @@
     <string name="user_large_avatar">User Large Avatar</string>
     <string name="earned_badge">Earned Badge</string>
     <string name="locked_badge">Locked Badge</string>
+    <string name="profile_title">PROFILE</string>
+    <string name="loading">LOADING…</string>
+    <string name="edit_username">Edit username</string>
+    <string name="xp_label_placeholder">0 / 750 XP</string>
+    <string name="pending_requests">PENDING REQUESTS</string>
+    <string name="party_members">PARTY MEMBERS</string>
+    <string name="stats_title">STATS</string>
+    <string name="total_saved_placeholder">TOTAL SAVED: ₱0</string>
+    <string name="unfriend">UNFRIEND</string>
+
+    <!-- Challenge Requests -->
+    <string name="incoming_quests">INCOMING QUESTS</string>
+    <string name="start_new_quest">⚔️ START NEW QUEST</string>
+    <string name="quest_name_placeholder">QUEST NAME</string>
+    <string name="from_player_placeholder">FROM: PLAYER</string>
+    <string name="target_gold_placeholder">TARGET: ₱0</string>
+    <string name="accept_challenge">Accept challenge</string>
+    <string name="reject_challenge">Reject challenge</string>
+    <string name="contribute">CONTRIBUTE</string>
+
+    <!-- Item Placeholders -->
+    <string name="chevron">▶</string>
+    <string name="rank_placeholder">1.</string>
+    <string name="player_placeholder">PLAYER</string>
+    <string name="gold_placeholder">₱0</string>
+    <string name="friend_placeholder">FRIEND</string>
+    <string name="lvl_placeholder">LVL 1</string>
 
     <!-- Add Transaction -->
     <string name="amount_label">AMOUNT</string>

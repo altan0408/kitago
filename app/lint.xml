@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Suppress internationalization warnings - Kitago uses hardcoded game-themed English strings -->
+    <issue id="SetTextI18n" severity="ignore" />
+    <issue id="HardcodedText" severity="ignore" />
+
+    <!-- GoogleSignIn deprecation - migration to Credential Manager is a separate task -->
+    <issue id="GradleDependency" severity="warning" />
+</lint>
+

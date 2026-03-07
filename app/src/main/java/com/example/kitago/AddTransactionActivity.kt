@@ -1,5 +1,6 @@
 package com.example.kitago
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +13,9 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.res.ResourcesCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.util.Locale
 
+@SuppressLint("SetTextI18n")
 class AddTransactionActivity : ComponentActivity() {
     private lateinit var userRef: DatabaseReference
     private var expenseTotals = mutableMapOf<String, Double>()
@@ -100,7 +103,7 @@ class AddTransactionActivity : ComponentActivity() {
         val typeLabel = if (isIncome) "TOTAL INCOME" else "TOTAL SPENDING"
         
         title.text = category
-        message.text = "$typeLabel: ₱${String.format("%.2f", currentTotal)}\n\nENTER NEW AMOUNT:"
+        message.text = "$typeLabel: ₱${String.format(Locale.getDefault(), "%.2f", currentTotal)}\n\nENTER NEW AMOUNT:"
         btnOk.text = if (isIncome) "SAVE" else "SPEND"
 
         val input = EditText(this).apply {
@@ -113,15 +116,23 @@ class AddTransactionActivity : ComponentActivity() {
             setBackgroundResource(R.drawable.bg_input)
         }
         
-        val container = dialogView as android.widget.LinearLayout
+        val container = dialogView as LinearLayout
         val index = container.indexOfChild(message)
         container.addView(input, index + 1)
 
         btnOk.setOnClickListener {
-            val amountStr = input.text.toString()
-            if (amountStr.isNotEmpty()) {
-                val amount = amountStr.toDouble()
-                DataManager.syncAddTransaction(amount, category, "", isIncome) { success ->
+            val amountStr = input.text.toString().trim()
+            if (amountStr.isEmpty()) {
+                Toast.makeText(this, "ENTER AN AMOUNT!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val amount = amountStr.toDoubleOrNull()
+            if (amount == null || amount <= 0) {
+                Toast.makeText(this, "ENTER A VALID AMOUNT!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            DataManager.syncAddTransaction(amount, category, "", isIncome) { success ->
+                runOnUiThread {
                     if (success) {
                         val msg = if (isIncome) "GOLD ADDED!" else "GOLD SPENT!"
                         Toast.makeText(this, "$msg ($category)", Toast.LENGTH_SHORT).show()

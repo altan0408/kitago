@@ -1,5 +1,6 @@
 package com.example.kitago
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -11,9 +12,11 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.core.content.res.ResourcesCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
+@SuppressLint("SetTextI18n")
 class GoalsActivity : ComponentActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
@@ -113,7 +116,7 @@ class GoalsActivity : ComponentActivity() {
         val header = TextView(this).apply {
             this.text = text
             this.setPadding(0, 40, 0, 16)
-            this.typeface = resources.getFont(R.font.press_start_2p)
+            this.typeface = ResourcesCompat.getFont(this@GoalsActivity, R.font.press_start_2p)
             this.textSize = 10f
             this.setTextColor(getColor(R.color.gold_light))
         }
@@ -124,7 +127,7 @@ class GoalsActivity : ComponentActivity() {
         val msg = TextView(this).apply {
             this.text = "NO ACTIVE QUESTS"
             this.setPadding(0, 40, 0, 40)
-            this.typeface = resources.getFont(R.font.press_start_2p)
+            this.typeface = ResourcesCompat.getFont(this@GoalsActivity, R.font.press_start_2p)
             this.textSize = 8f
             this.gravity = android.view.Gravity.CENTER
             this.setTextColor(getColor(R.color.text_muted))
@@ -176,11 +179,14 @@ class GoalsActivity : ComponentActivity() {
 
             val btnDecline = TextView(this).apply {
                 text = "DECLINE"
-                typeface = resources.getFont(R.font.press_start_2p)
+                typeface = ResourcesCompat.getFont(this@GoalsActivity, R.font.press_start_2p)
                 textSize = 12f
-                setTextColor(getColor(R.color.hp_red))
+                setTextColor(resources.getColor(android.R.color.black, null))
                 gravity = android.view.Gravity.CENTER
-                setPadding(0, 40, 0, 40)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 120
+                ).apply { setMargins(0, 16, 0, 0) }
+                setBackgroundResource(R.drawable.bg_button_orange)
                 setOnClickListener {
                     respondToInvite(goal, "DECLINED")
                     dialog.dismiss()
@@ -196,11 +202,14 @@ class GoalsActivity : ComponentActivity() {
 
             val btnCancel = TextView(this).apply {
                 text = "ABANDON QUEST"
-                typeface = resources.getFont(R.font.press_start_2p)
+                typeface = ResourcesCompat.getFont(this@GoalsActivity, R.font.press_start_2p)
                 textSize = 10f
-                setTextColor(getColor(R.color.hp_red))
+                setTextColor(resources.getColor(android.R.color.black, null))
                 gravity = android.view.Gravity.CENTER
-                setPadding(0, 40, 0, 40)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 120
+                ).apply { setMargins(0, 16, 0, 0) }
+                setBackgroundResource(R.drawable.bg_button_orange)
                 setOnClickListener {
                     respondToInvite(goal, "CANCELLED")
                     dialog.dismiss()
@@ -214,26 +223,18 @@ class GoalsActivity : ComponentActivity() {
     }
 
     private fun respondToInvite(goal: Goal, status: String) {
-        val myId = firebaseAuth.currentUser!!.uid
-        val db = firebaseDatabase.reference
-        val updates = hashMapOf<String, Any?>()
-
-        if (status == "ACCEPTED") {
-            updates["goals/${goal.id}/collaboratorStatuses/$myId"] = "ACCEPTED"
-            updates["users/$myId/goals/${goal.id}"] = "ACCEPTED"
-        } else if (status == "DECLINED") {
-            updates["users/$myId/goals/${goal.id}"] = null
-            updates["goals/${goal.id}/collaboratorStatuses/$myId"] = "DECLINED"
-        } else if (status == "CANCELLED") {
-            // Remove reference for everyone and delete the central goal
-            updates["goals/${goal.id}"] = null
-            goal.collaboratorStatuses.keys.forEach { uid ->
-                updates["users/$uid/goals/${goal.id}"] = null
+        DataManager.respondToChallenge(goal.id, goal, status) { success ->
+            runOnUiThread {
+                if (success) {
+                    val msg = when (status) {
+                        "ACCEPTED" -> "QUEST ACCEPTED!"
+                        "DECLINED" -> "QUEST DECLINED!"
+                        "CANCELLED" -> "QUEST ABANDONED!"
+                        else -> "QUEST UPDATED"
+                    }
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                }
             }
-        }
-
-        db.updateChildren(updates).addOnSuccessListener {
-            Toast.makeText(this, "QUEST UPDATED", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -243,10 +244,22 @@ class GoalsActivity : ComponentActivity() {
         val progressBar = view.findViewById<ProgressBar>(R.id.goalProgressBar)
         val tvProgress = view.findViewById<TextView>(R.id.tvProgressPercent)
 
-        tvName.text = if (goal.isCollaborative) "⚔️ ${goal.name.uppercase()}" else goal.name.uppercase()
-        val progress = if (goal.targetGold > 0) (goal.savedGold / goal.targetGold * 100).toInt() else 0
+        val prefix = when {
+            goal.status == "COMPLETED" -> "✅ "
+            goal.isCollaborative -> "⚔️ "
+            else -> ""
+        }
+        tvName.text = "$prefix${goal.name.uppercase()}"
+
+        val progress = if (goal.targetGold > 0) (goal.savedGold / goal.targetGold * 100).toInt().coerceIn(0, 100) else 0
         progressBar.progress = progress
-        tvProgress.text = "$progress% COMPLETE"
+
+        val streakText = if (goal.isCollaborative && goal.collabStreak > 0) " | 🔥${goal.collabStreak}" else ""
+        tvProgress.text = "$progress% COMPLETE$streakText"
+
+        if (goal.status == "COMPLETED") {
+            tvProgress.setTextColor(getColor(R.color.hp_green))
+        }
 
         view.setOnClickListener {
             val intent = Intent(this, GoalDetailActivity::class.java)
