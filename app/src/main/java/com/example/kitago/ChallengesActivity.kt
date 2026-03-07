@@ -96,6 +96,18 @@ class ChallengesActivity : ComponentActivity() {
     // --- LEADERBOARD SECTION ---
 
     private fun loadLeaderboard() {
+        // Show loading state
+        leaderboardContainer.removeAllViews()
+        val loadingText = TextView(this).apply {
+            text = "LOADING..."
+            typeface = android.graphics.Typeface.create("@font/press_start_2p", android.graphics.Typeface.NORMAL)
+            textSize = 8f
+            setTextColor(getColor(R.color.text_muted))
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 40, 0, 40)
+        }
+        leaderboardContainer.addView(loadingText)
+
         val usersRef = database.reference.child("users")
         usersRef.orderByChild("totalSavedGold").limitToLast(20).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -114,7 +126,23 @@ class ChallengesActivity : ComponentActivity() {
                 // Sort descending by score
                 userList.sortByDescending { it.score }
 
-                userList.forEachIndexed { index, entry ->
+                if (userList.isEmpty() || userList.all { it.score == 0.0 }) {
+                    val emptyText = TextView(this@ChallengesActivity).apply {
+                        text = "NO ADVENTURERS ON\nTHE BOARD YET!\n\nSAVE GOLD TO RANK UP."
+                        typeface = androidx.core.content.res.ResourcesCompat.getFont(this@ChallengesActivity, R.font.press_start_2p)
+                        textSize = 8f
+                        setTextColor(getColor(R.color.text_muted))
+                        gravity = android.view.Gravity.CENTER
+                        setPadding(0, 40, 0, 40)
+                        setLineSpacing(8f, 1.2f)
+                    }
+                    leaderboardContainer.addView(emptyText)
+                    return
+                }
+
+                // Filter out users with 0 score for a cleaner leaderboard
+                val filteredList = userList.filter { it.score > 0 }
+                filteredList.forEachIndexed { index, entry ->
                     addLeaderboardEntry(index + 1, entry)
                 }
             }
@@ -147,11 +175,19 @@ class ChallengesActivity : ComponentActivity() {
     }
 
     private fun setupNavigation() {
-        findViewById<ImageButton>(R.id.navHome).setOnClickListener { startActivity(Intent(this, DashboardActivity::class.java)) }
-        findViewById<ImageButton>(R.id.navGoals).setOnClickListener { startActivity(Intent(this, GoalsActivity::class.java)) }
-        findViewById<ImageButton>(R.id.navAdd).setOnClickListener { startActivity(Intent(this, AddTransactionActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navHome).setOnClickListener {
+            startActivity(Intent(this, DashboardActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
+        findViewById<ImageButton>(R.id.navGoals).setOnClickListener {
+            startActivity(Intent(this, GoalsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
+        findViewById<ImageButton>(R.id.navAdd).setOnClickListener {
+            startActivity(Intent(this, AddTransactionActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
         findViewById<ImageButton>(R.id.navChallenges).setOnClickListener { /* Already on challenges */ }
-        findViewById<ImageButton>(R.id.navProfile).setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navProfile).setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
     }
 
     data class LeaderboardEntry(val name: String, val score: Double, val pic: String?, val level: Int)

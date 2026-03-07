@@ -12,6 +12,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.res.ResourcesCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.text.SimpleDateFormat
 import java.util.*
 
 @SuppressLint("SetTextI18n")
@@ -91,7 +92,7 @@ class GoalDetailActivity : ComponentActivity() {
 
                 findViewById<TextView>(R.id.tvSavedAmount).text = String.format(Locale.getDefault(), "₱%.2f", goal.savedGold)
                 findViewById<TextView>(R.id.tvTargetAmount).text = String.format(Locale.getDefault(), "₱%.2f", goal.targetGold)
-                findViewById<TextView>(R.id.tvDeadline).text = goal.deadline
+                findViewById<TextView>(R.id.tvDeadline).text = formatDeadlineWithRemaining(goal.deadline)
 
                 val tvCollabs = findViewById<TextView>(R.id.tvCollaborators)
                 val tvCollabStreak = findViewById<TextView>(R.id.tvCollabStreak)
@@ -299,9 +300,39 @@ class GoalDetailActivity : ComponentActivity() {
             }
         }
 
+        // Cancel button
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@GoalDetailActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        container.addView(btnCancel)
+
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
         dialog.show()
+    }
+
+    private fun formatDeadlineWithRemaining(deadline: String): String {
+        return try {
+            val sdf = SimpleDateFormat("d/M/yyyy", Locale.getDefault())
+            val deadlineDate = sdf.parse(deadline) ?: return deadline
+            val today = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+            }.time
+            val diff = deadlineDate.time - today.time
+            val daysRemaining = (diff / (1000 * 60 * 60 * 24)).toInt()
+            when {
+                daysRemaining < 0 -> "$deadline (OVERDUE)"
+                daysRemaining == 0 -> "$deadline (TODAY!)"
+                daysRemaining == 1 -> "$deadline (1 DAY LEFT)"
+                else -> "$deadline ($daysRemaining DAYS LEFT)"
+            }
+        } catch (_: Exception) { deadline }
     }
 
     private fun contributeToGoal(amount: Double) {

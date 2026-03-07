@@ -131,16 +131,34 @@ class AddTransactionActivity : ComponentActivity() {
                 Toast.makeText(this, "ENTER A VALID AMOUNT!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            if (amount > 1000000) {
+                Toast.makeText(this, "AMOUNT TOO LARGE!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             DataManager.syncAddTransaction(amount, category, "", isIncome) { success ->
                 runOnUiThread {
                     if (success) {
                         val msg = if (isIncome) "GOLD ADDED!" else "GOLD SPENT!"
                         Toast.makeText(this, "$msg ($category)", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
+                    } else {
+                        Toast.makeText(this, "INSUFFICIENT GOLD IN VAULT!", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         }
+
+        // Cancel button
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@AddTransactionActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        container.addView(btnCancel)
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()

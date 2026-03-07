@@ -9,10 +9,12 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.res.ResourcesCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -88,6 +90,62 @@ class LoginActivity : ComponentActivity() {
         findViewById<TextView>(R.id.tvRegisterNow).setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
         }
+
+        findViewById<TextView>(R.id.tvForgotPassword).setOnClickListener {
+            showForgotPasswordDialog(etEmail.text.toString().trim())
+        }
+    }
+
+    private fun showForgotPasswordDialog(prefilledEmail: String) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "RESET PASSWORD"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER YOUR EMAIL TO\nRECEIVE A RESET LINK:"
+
+        val input = EditText(this).apply {
+            hint = "email@example.com"
+            setText(prefilledEmail)
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+            typeface = ResourcesCompat.getFont(this@LoginActivity, R.font.press_start_2p)
+            textSize = 10f; setPadding(40, 40, 40, 40)
+            setBackgroundResource(R.drawable.bg_input)
+        }
+        (dialogView as LinearLayout).addView(input, 2)
+
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "SEND"
+            setOnClickListener {
+                val email = input.text.toString().trim()
+                if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    Toast.makeText(this@LoginActivity, "ENTER A VALID EMAIL!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                firebaseAuth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener { task ->
+                        dialog.dismiss()
+                        if (task.isSuccessful) {
+                            showGameDialog("EMAIL SENT!", "CHECK YOUR INBOX FOR\nTHE RESET LINK.\n\nDON'T FORGET TO CHECK SPAM!") {}
+                        } else {
+                            showGameDialog("FAILED", task.exception?.message ?: "COULD NOT SEND RESET EMAIL.") {}
+                        }
+                    }
+            }
+        }
+
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@LoginActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        dialogView.addView(btnCancel)
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
     }
 
     private fun validateLogin(email: String, pass: String): Boolean {

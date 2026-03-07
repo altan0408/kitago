@@ -9,7 +9,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.res.ResourcesCompat
 import com.google.firebase.auth.FirebaseAuth
@@ -43,9 +42,11 @@ class SettingsActivity : ComponentActivity() {
 
         switchMusic.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(KEY_MUSIC, isChecked).apply()
+            Toast.makeText(this, if (isChecked) "MUSIC ON" else "MUSIC OFF", Toast.LENGTH_SHORT).show()
         }
         switchSfx.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(KEY_SFX, isChecked).apply()
+            Toast.makeText(this, if (isChecked) "SFX ON" else "SFX OFF", Toast.LENGTH_SHORT).show()
         }
 
         // --- System Toggles ---
@@ -70,41 +71,15 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
-    private fun showLanguageDialog(tvLanguage: TextView, prefs: android.content.SharedPreferences) {
-        val languages = arrayOf("ENG", "FIL")
+    private fun showLanguageDialog(@Suppress("UNUSED_PARAMETER") tvLanguage: TextView, @Suppress("UNUSED_PARAMETER") prefs: android.content.SharedPreferences) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
 
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "LANGUAGE"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "SELECT YOUR LANGUAGE"
-        dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "CANCEL"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "MULTI-LANGUAGE SUPPORT\nCOMING SOON!\n\nSTAY TUNED, ADVENTURER."
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "OK"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener { dialog.dismiss() }
 
-        val container = dialogView as LinearLayout
-        val btnOkIndex = container.indexOfChild(dialogView.findViewById(R.id.btnDialogOk))
-
-        for (lang in languages) {
-            val btn = TextView(this).apply {
-                text = lang
-                typeface = ResourcesCompat.getFont(this@SettingsActivity, R.font.press_start_2p)
-                textSize = 12f
-                setTextColor(getColor(R.color.text_dark))
-                gravity = android.view.Gravity.CENTER
-                setPadding(0, 30, 0, 30)
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                background = AppCompatResources.getDrawable(this@SettingsActivity, R.drawable.bg_button_gold)
-                setOnClickListener {
-                    prefs.edit().putString(KEY_LANGUAGE, lang).apply()
-                    tvLanguage.text = lang
-                    Toast.makeText(this@SettingsActivity, "LANGUAGE SET TO $lang", Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()
-                }
-            }
-            container.addView(btn, btnOkIndex)
-        }
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
@@ -116,7 +91,7 @@ class SettingsActivity : ComponentActivity() {
 
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "⚠️ RESET"
         dialogView.findViewById<TextView>(R.id.tvDialogMessage).text =
-            "THIS WILL RESET YOUR BALANCE, XP, LEVEL, WINS, AND STREAK.\n\nYOUR QUESTS AND FRIENDS WILL BE KEPT.\n\nARE YOU SURE?"
+            "THIS WILL RESET YOUR BALANCE, XP, LEVEL, WINS, STREAK, AND BADGES.\n\nYOUR QUESTS AND FRIENDS WILL BE KEPT.\n\nARE YOU SURE?"
 
         dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
             text = "RESET"
@@ -160,7 +135,8 @@ class SettingsActivity : ComponentActivity() {
             "totalSavedGold" to 0.0,
             "expense_totals" to null,
             "income_totals" to null,
-            "goal_streaks" to null
+            "goal_streaks" to null,
+            "badges" to null
         )
         userRef.updateChildren(updates).addOnSuccessListener {
             Toast.makeText(this, "PROGRESS RESET!", Toast.LENGTH_SHORT).show()

@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "923109194344-bqcg48rj7mp9n9rhve1hdboufa743f7o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kitago",
+            "certificate_hash": "a5fec9565734286760a7eb1670a01c0056508a42"
+          }
+        },
+        {
           "client_id": "923109194344-50jv2b06kvbjvh3kd1e707e2lmujr45l.apps.googleusercontent.com",
           "client_type": 3
         }

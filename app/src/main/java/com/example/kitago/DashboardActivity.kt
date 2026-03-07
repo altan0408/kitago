@@ -63,19 +63,33 @@ class DashboardActivity : ComponentActivity() {
         userRef.child("lastResetMonth").get().addOnSuccessListener { snapshot ->
             val lastReset = snapshot.getValue(String::class.java)
             if (lastReset != null && lastReset != currentMonthYear) {
-                // NEW MONTH: Reset balance and totals but KEEP goals
+                // NEW MONTH: Reset balance and totals but KEEP goals, friends, badges, level, XP
                 val updates = hashMapOf<String, Any?>(
                     "balance" to 0.0,
                     "expense_totals" to null,
                     "income_totals" to null,
                     "lastResetMonth" to currentMonthYear
                 )
-                userRef.updateChildren(updates)
-                Toast.makeText(this, "NEW MONTH! VAULT RESET.", Toast.LENGTH_LONG).show()
+                userRef.updateChildren(updates).addOnSuccessListener {
+                    showMonthlyResetDialog()
+                }
             } else if (lastReset == null) {
                 userRef.child("lastResetMonth").setValue(currentMonthYear)
             }
         }
+    }
+
+    private fun showMonthlyResetDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).setCancelable(false).create()
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "🗓️ NEW MONTH!"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text =
+            "YOUR VAULT BALANCE AND\nMONTHLY TRANSACTIONS\nHAVE BEEN RESET.\n\n" +
+            "YOUR QUESTS, XP, LEVEL,\nBADGES & FRIENDS\nARE STILL SAFE!"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "LET'S GO!"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener { dialog.dismiss() }
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
     }
 
     private fun setupUI() {
@@ -89,6 +103,10 @@ class DashboardActivity : ComponentActivity() {
     }
 
     private fun observeUserData() {
+        // Show loading state initially
+        findViewById<TextView>(R.id.tvUsername).text = "LOADING..."
+        findViewById<TextView>(R.id.tvBalance).text = "---"
+
         userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!snapshot.exists()) return
@@ -101,6 +119,14 @@ class DashboardActivity : ComponentActivity() {
                 findViewById<TextView>(R.id.tvBalance).text = String.format(Locale.getDefault(), "₱%.2f", balance)
 
                 loadProfileImage(profilePicUrl, findViewById(R.id.ivAvatar))
+
+                // XP Bar
+                val level = snapshot.child("level").getValue(Int::class.java) ?: 1
+                val xp = snapshot.child("xp").getValue(Int::class.java) ?: 0
+                val xpNeeded = DataManager.getXpNeededForLevel(level)
+                val xpBar = findViewById<ProgressBar>(R.id.xpProgressBar)
+                xpBar.max = xpNeeded
+                xpBar.progress = xp
 
                 // Monthly Summary
                 val expenses = snapshot.child("expense_totals")
@@ -192,6 +218,8 @@ class DashboardActivity : ComponentActivity() {
         }
         (dialogView as LinearLayout).addView(input, 2)
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "DEPOSIT"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ADD GOLD TO YOUR VAULT:"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "DEPOSIT"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener {
             val amountStr = input.text.toString().trim()
             if (amountStr.isEmpty()) {
@@ -211,15 +239,34 @@ class DashboardActivity : ComponentActivity() {
                 runOnUiThread { dialog.dismiss() }
             }
         }
+        // Cancel button
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@DashboardActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        dialogView.addView(btnCancel)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
 
     private fun setupNavigation() {
-        findViewById<ImageButton>(R.id.navHome).setOnClickListener { }
-        findViewById<ImageButton>(R.id.navGoals).setOnClickListener { startActivity(Intent(this, GoalsActivity::class.java)) }
-        findViewById<ImageButton>(R.id.navAdd).setOnClickListener { startActivity(Intent(this, AddTransactionActivity::class.java)) }
-        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener { startActivity(Intent(this, ChallengesActivity::class.java)) }
-        findViewById<ImageButton>(R.id.navProfile).setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navHome).setOnClickListener { /* Already on dashboard */ }
+        findViewById<ImageButton>(R.id.navGoals).setOnClickListener {
+            startActivity(Intent(this, GoalsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
+        findViewById<ImageButton>(R.id.navAdd).setOnClickListener {
+            startActivity(Intent(this, AddTransactionActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
+        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener {
+            startActivity(Intent(this, ChallengesActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
+        findViewById<ImageButton>(R.id.navProfile).setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
     }
 }

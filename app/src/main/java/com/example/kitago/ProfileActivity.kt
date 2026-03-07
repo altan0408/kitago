@@ -242,20 +242,39 @@ class ProfileActivity : ComponentActivity() {
         }
         (dialogView as LinearLayout).addView(input, 2)
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "ADD PARTY"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER ADVENTURER NAME:"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
             text = "SEND"
             setOnClickListener {
                 val name = input.text.toString().trim().lowercase().replace(" ", "_")
+                if (name.isEmpty()) {
+                    Toast.makeText(this@ProfileActivity, "ENTER A USERNAME!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
                 usernamesRef.child(name).get().addOnSuccessListener { s ->
                     if (s.exists()) {
                         val fId = s.value.toString()
-                        FirebaseDatabase.getInstance().reference.child("friend_requests").child(fId).child(auth.currentUser!!.uid).setValue(currentUsername)
-                        Toast.makeText(this@ProfileActivity, "REQUEST SENT!", Toast.LENGTH_SHORT).show()
-                        dialog.dismiss()
+                        if (fId == auth.currentUser!!.uid) {
+                            Toast.makeText(this@ProfileActivity, "CAN'T ADD YOURSELF!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            FirebaseDatabase.getInstance().reference.child("friend_requests").child(fId).child(auth.currentUser!!.uid).setValue(currentUsername)
+                            Toast.makeText(this@ProfileActivity, "REQUEST SENT!", Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                        }
                     } else { Toast.makeText(this@ProfileActivity, "NOT FOUND!", Toast.LENGTH_SHORT).show() }
                 }
             }
         }
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        dialogView.addView(btnCancel)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
@@ -267,12 +286,54 @@ class ProfileActivity : ComponentActivity() {
     private fun loadBadges(badgesSnapshot: DataSnapshot) {
         val grid = findViewById<GridLayout>(R.id.badgeGrid)
         grid.removeAllViews()
-        for (@Suppress("UNUSED_VARIABLE") badge in badgesSnapshot.children) {
+
+        if (!badgesSnapshot.hasChildren()) {
+            val emptyText = TextView(this).apply {
+                text = "NO BADGES YET"
+                typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+                textSize = 8f
+                setTextColor(getColor(R.color.text_muted))
+                gravity = android.view.Gravity.CENTER
+                setPadding(16, 32, 16, 32)
+                layoutParams = GridLayout.LayoutParams().apply {
+                    columnSpec = GridLayout.spec(0, 3)
+                    width = GridLayout.LayoutParams.MATCH_PARENT
+                }
+            }
+            grid.addView(emptyText)
+            return
+        }
+
+        for (badge in badgesSnapshot.children) {
+            val badgeName = badge.getValue(String::class.java) ?: badge.key ?: "BADGE"
+            val badgeView = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = android.view.Gravity.CENTER
+                setPadding(8, 8, 8, 8)
+                layoutParams = GridLayout.LayoutParams().apply {
+                    width = 0
+                    height = GridLayout.LayoutParams.WRAP_CONTENT
+                    columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                    setMargins(4, 4, 4, 4)
+                }
+                setBackgroundResource(R.drawable.bg_panel)
+            }
             val icon = ImageView(this).apply {
-                layoutParams = GridLayout.LayoutParams().apply { width = 100; height = 100; setMargins(8, 8, 8, 8) }
+                layoutParams = LinearLayout.LayoutParams(64, 64).apply { setMargins(0, 8, 0, 4) }
                 setImageResource(android.R.drawable.btn_star_big_on)
             }
-            grid.addView(icon)
+            val label = TextView(this).apply {
+                text = badgeName
+                typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+                textSize = 6f
+                setTextColor(getColor(R.color.text_dark))
+                gravity = android.view.Gravity.CENTER
+                setPadding(4, 0, 4, 8)
+                maxLines = 2
+            }
+            badgeView.addView(icon)
+            badgeView.addView(label)
+            grid.addView(badgeView)
         }
     }
 
@@ -285,9 +346,18 @@ class ProfileActivity : ComponentActivity() {
         }
         (dialogView as LinearLayout).addView(input, 2)
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "CHANGE NAME"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER NEW ADVENTURER NAME:"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener {
             val n = input.text.toString().trim()
-            if (n.isNotEmpty() && n != currentUsername) {
+            if (n.isEmpty()) {
+                Toast.makeText(this@ProfileActivity, "NAME CAN'T BE EMPTY!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (n.length > 30) {
+                Toast.makeText(this@ProfileActivity, "NAME TOO LONG! (MAX 30)", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (n != currentUsername) {
                 val clean = n.lowercase().replace(" ", "_")
                 usernamesRef.child(clean).get().addOnSuccessListener { s ->
                     if (s.exists() && s.value != auth.currentUser!!.uid) { Toast.makeText(this@ProfileActivity, "TAKEN!", Toast.LENGTH_SHORT).show() }
@@ -299,6 +369,16 @@ class ProfileActivity : ComponentActivity() {
                 }
             } else { dialog.dismiss() }
         }
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        dialogView.addView(btnCancel)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
@@ -307,11 +387,19 @@ class ProfileActivity : ComponentActivity() {
         try {
             val inputStream = contentResolver.openInputStream(uri)
             val bitmap = BitmapFactory.decodeStream(inputStream)
+            if (bitmap == null) {
+                Toast.makeText(this, "FAILED TO LOAD IMAGE!", Toast.LENGTH_SHORT).show()
+                return
+            }
             val scaled = bitmap.scale(200, 200, true)
             val out = ByteArrayOutputStream()
             scaled.compress(Bitmap.CompressFormat.JPEG, 70, out)
             userRef.child("profilePic").setValue(Base64.encodeToString(out.toByteArray(), Base64.DEFAULT))
-        } catch (_: Exception) {}
+                .addOnSuccessListener { Toast.makeText(this, "AVATAR UPDATED!", Toast.LENGTH_SHORT).show() }
+                .addOnFailureListener { Toast.makeText(this, "UPLOAD FAILED!", Toast.LENGTH_SHORT).show() }
+        } catch (_: Exception) {
+            Toast.makeText(this, "FAILED TO PROCESS IMAGE!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showSignOutDialog() {
@@ -351,10 +439,18 @@ class ProfileActivity : ComponentActivity() {
     }
 
     private fun setupNavigation() {
-        findViewById<ImageButton>(R.id.navHome).setOnClickListener { startActivity(Intent(this, DashboardActivity::class.java)) }
-        findViewById<ImageButton>(R.id.navGoals).setOnClickListener { startActivity(Intent(this, GoalsActivity::class.java)) }
-        findViewById<ImageButton>(R.id.navAdd).setOnClickListener { startActivity(Intent(this, AddTransactionActivity::class.java)) }
-        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener { startActivity(Intent(this, ChallengesActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navHome).setOnClickListener {
+            startActivity(Intent(this, DashboardActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
+        findViewById<ImageButton>(R.id.navGoals).setOnClickListener {
+            startActivity(Intent(this, GoalsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
+        findViewById<ImageButton>(R.id.navAdd).setOnClickListener {
+            startActivity(Intent(this, AddTransactionActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
+        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener {
+            startActivity(Intent(this, ChallengesActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        }
         findViewById<ImageButton>(R.id.navProfile).setOnClickListener { /* Already on profile */ }
     }
 }
