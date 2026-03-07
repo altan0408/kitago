@@ -302,10 +302,10 @@
         android:orientation="horizontal"
         android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent">
-        <ImageButton android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_view" android:background="?attr/selectableItemBackgroundBorderless" />
-        <ImageButton android:id="@+id/navGoals" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_compass" android:background="?attr/selectableItemBackgroundBorderless" />
-        <ImageButton android:id="@+id/navAdd" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_input_add" android:background="?attr/selectableItemBackgroundBorderless" />
-        <ImageButton android:id="@+id/navChallenges" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/btn_star_big_on" android:background="?attr/selectableItemBackgroundBorderless" />
-        <ImageButton android:id="@+id/navProfile" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_myplaces" android:background="?attr/selectableItemBackgroundBorderless" />
+        <ImageButton android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_view" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/home" />
+        <ImageButton android:id="@+id/navGoals" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_compass" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/goals" />
+        <ImageButton android:id="@+id/navAdd" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_input_add" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/add" />
+        <ImageButton android:id="@+id/navChallenges" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/btn_star_big_on" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/challenges" />
+        <ImageButton android:id="@+id/navProfile" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:src="@android:drawable/ic_menu_myplaces" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/profile" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

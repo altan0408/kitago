@@ -4,6 +4,9 @@
     <issue id="SetTextI18n" severity="ignore" />
     <issue id="HardcodedText" severity="ignore" />
 
+    <!-- SharedPreferences.edit KTX suggestion - not using KTX extension -->
+    <issue id="CommitPrefEdits" severity="ignore" />
+
     <!-- GoogleSignIn deprecation - migration to Credential Manager is a separate task -->
     <issue id="GradleDependency" severity="warning" />
 </lint>

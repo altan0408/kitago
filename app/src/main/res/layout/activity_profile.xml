@@ -237,6 +237,8 @@
                         android:text="@string/party_members"
                         android:textColor="#333333"
                         android:textSize="10sp"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@id/btnAddFriend"
                         tools:ignore="SmallSp" />
                     <ImageButton
                         android:id="@+id/btnAddFriend"

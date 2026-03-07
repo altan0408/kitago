@@ -164,7 +164,7 @@
                 android:padding="10dp"
                 android:background="@drawable/bg_stone_tablet"
                 android:contentDescription="@string/google"
-                android:tint="#EA4335" />
+                app:tint="#EA4335" />
         </LinearLayout>
 
         <!-- REGISTER LINK -->

@@ -156,6 +156,7 @@
     <string name="account">ACCOUNT</string>
     <string name="change_username">CHANGE USERNAME</string>
     <string name="alerts">ALERTS</string>
+    <string name="language_eng">ENG</string>
 
     <!-- Firebase & Social -->
     <string name="default_web_client_id">923109194344-50jv2b06kvbjvh3kd1e707e2lmujr45l.apps.googleusercontent.com</string>

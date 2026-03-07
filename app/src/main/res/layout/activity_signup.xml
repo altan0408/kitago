@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    tools:context=".SignupActivity"
     android:layout_height="match_parent">
 
     <ImageView
@@ -60,12 +61,13 @@
             android:layout_height="40dp"
             android:background="@drawable/bg_input"
             android:padding="8dp"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="12dp"
             android:hint="@string/username"
-            android:inputType="text" />
+            android:inputType="text"
+            android:autofillHints="username" />
 
         <!-- EMAIL -->
         <EditText
@@ -74,12 +76,13 @@
             android:layout_height="40dp"
             android:background="@drawable/bg_input"
             android:padding="8dp"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="12dp"
             android:hint="@string/email_address"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+            android:autofillHints="emailAddress" />
 
         <!-- PASSWORD -->
         <EditText
@@ -88,12 +91,13 @@
             android:layout_height="40dp"
             android:background="@drawable/bg_input"
             android:padding="8dp"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="12dp"
             android:hint="@string/password"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            android:autofillHints="password" />
 
         <!-- CONFIRM PASSWORD -->
         <EditText
@@ -102,12 +106,13 @@
             android:layout_height="40dp"
             android:background="@drawable/bg_input"
             android:padding="8dp"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="12dp"
             android:hint="@string/confirm_password"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            android:autofillHints="password" />
 
         <TextView
             android:id="@+id/btnSignUp"
@@ -127,7 +132,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/or_sign_up_using"
-            android:textSize="8sp"
+            android:textSize="11sp"
             android:textColor="@color/text_muted"
             android:fontFamily="@font/press_start_2p"
             android:layout_marginBottom="8dp" />
@@ -146,7 +151,7 @@
                 android:padding="10dp"
                 android:background="@drawable/bg_stone_tablet"
                 android:contentDescription="@string/google"
-                android:tint="#EA4335" />
+                app:tint="#EA4335" />
         </LinearLayout>
 
         <TextView
@@ -154,7 +159,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/already_have_account"
-            android:textSize="8sp"
+            android:textSize="11sp"
             android:gravity="center"
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"

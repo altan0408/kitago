@@ -264,11 +264,10 @@ class ProfileActivity : ComponentActivity() {
         ImageUtils.loadProfileImage(this, data, imageView)
     }
 
-    @Suppress("UNUSED_VARIABLE")
     private fun loadBadges(badgesSnapshot: DataSnapshot) {
         val grid = findViewById<GridLayout>(R.id.badgeGrid)
         grid.removeAllViews()
-        for (badge in badgesSnapshot.children) {
+        for (@Suppress("UNUSED_VARIABLE") badge in badgesSnapshot.children) {
             val icon = ImageView(this).apply {
                 layoutParams = GridLayout.LayoutParams().apply { width = 100; height = 100; setMargins(8, 8, 8, 8) }
                 setImageResource(android.R.drawable.btn_star_big_on)
