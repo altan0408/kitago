@@ -2,11 +2,14 @@ package com.example.kitago
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -103,6 +106,28 @@ class SignupActivity : ComponentActivity() {
         findViewById<TextView>(R.id.tvLoginHere).setOnClickListener {
             finish()
         }
+
+        // Real-time password strength indicator
+        val tvStrength = findViewById<TextView>(R.id.tvPasswordStrength)
+        val strengthBar = findViewById<ProgressBar>(R.id.passwordStrengthBar)
+        etPassword.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val pass = s?.toString() ?: ""
+                if (pass.isEmpty()) {
+                    tvStrength.visibility = android.view.View.GONE
+                    strengthBar.visibility = android.view.View.GONE
+                    return
+                }
+                val result = PasswordValidator.validate(pass)
+                tvStrength.visibility = android.view.View.VISIBLE
+                strengthBar.visibility = android.view.View.VISIBLE
+                tvStrength.text = result.strength.label
+                tvStrength.setTextColor(result.strength.color)
+                strengthBar.progress = 4 - result.errors.size
+            }
+        })
     }
 
     private fun validateFields(user: String, email: String, pass: String, confirmPass: String): Boolean {
@@ -110,12 +135,17 @@ class SignupActivity : ComponentActivity() {
             Toast.makeText(this, "Username is required", Toast.LENGTH_SHORT).show()
             return false
         }
+        if (user.length > 30) {
+            Toast.makeText(this, "Username too long (max 30)", Toast.LENGTH_SHORT).show()
+            return false
+        }
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(this, "Valid email address is required", Toast.LENGTH_SHORT).show()
             return false
         }
-        if (pass.length < 6) {
-            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+        val passResult = PasswordValidator.validate(pass)
+        if (!passResult.isValid) {
+            Toast.makeText(this, "PASSWORD NEEDS: ${passResult.errors.joinToString(", ")}", Toast.LENGTH_LONG).show()
             return false
         }
         if (pass != confirmPass) {
@@ -161,7 +191,9 @@ class SignupActivity : ComponentActivity() {
         userData["xp"] = 0
         userData["wins"] = 0
         userData["streak"] = 0
-        
+        userData["totalSavedGold"] = 0.0
+        userData["lastResetMonth"] = "${java.util.Calendar.getInstance().get(java.util.Calendar.MONTH)}_${java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)}"
+
         val cleanName = username.lowercase().replace(" ", "_")
         
         // Save user data and update lookup index

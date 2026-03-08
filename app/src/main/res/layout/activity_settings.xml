@@ -33,9 +33,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:fontFamily="@font/press_start_2p"
-        android:text="@string/settings"
+        android:text="⚙️ SETTINGS"
         android:textColor="@color/white"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:shadowColor="#000000"
         android:shadowDx="3"
         android:shadowDy="3"
@@ -51,6 +51,7 @@
         android:layout_marginTop="24dp"
         android:paddingHorizontal="24dp"
         android:scrollbars="none"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvSettingsTitle">
 
@@ -60,14 +61,14 @@
             android:orientation="vertical"
             android:paddingBottom="40dp">
 
-            <!-- AUDIO SECTION -->
+            <!-- ═══ AUDIO ═══ -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/press_start_2p"
-                android:text="@string/audio"
+                android:text="🔊 AUDIO"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:layout_marginBottom="12dp"
                 android:shadowColor="#000000"
                 android:shadowDx="2"
@@ -80,17 +81,17 @@
                 android:background="@drawable/bg_panel"
                 android:orientation="vertical"
                 android:padding="20dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="20dp">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp">
+                    android:layout_marginBottom="16dp">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/press_start_2p"
-                        android:text="@string/music"
+                        android:text="🎵 MUSIC"
                         android:textColor="@color/text_dark"
                         android:textSize="10sp"
                         android:layout_centerVertical="true"
@@ -104,6 +105,12 @@
                         android:checked="true" />
                 </RelativeLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#22000000"
+                    android:layout_marginBottom="16dp" />
+
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -111,7 +118,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/press_start_2p"
-                        android:text="@string/sfx"
+                        android:text="💥 SFX"
                         android:textColor="@color/text_dark"
                         android:textSize="10sp"
                         android:layout_centerVertical="true"
@@ -126,14 +133,147 @@
                 </RelativeLayout>
             </LinearLayout>
 
-            <!-- SYSTEM SECTION -->
+            <!-- ═══ SYSTEM ═══ -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/press_start_2p"
-                android:text="@string/system"
+                android:text="🛡️ SYSTEM"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="12sp"
+                android:layout_marginBottom="12dp"
+                android:shadowColor="#000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_panel"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:layout_marginBottom="20dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/press_start_2p"
+                        android:text="🔔 ALERTS"
+                        android:textColor="@color/text_dark"
+                        android:textSize="10sp"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@id/switchAlerts"
+                        tools:ignore="SmallSp,RelativeOverlap" />
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switchAlerts"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:checked="true" />
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#22000000"
+                    android:layout_marginBottom="16dp" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/tvLanguageLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/press_start_2p"
+                        android:text="🌐 LANGUAGE"
+                        android:textColor="@color/text_dark"
+                        android:textSize="10sp"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@+id/tvLanguageValue"
+                        tools:ignore="SmallSp" />
+                    <TextView
+                        android:id="@id/tvLanguageValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:fontFamily="@font/press_start_2p"
+                        android:text="@string/language_eng"
+                        android:textColor="@color/link_teal"
+                        android:textSize="10sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="8dp"
+                        tools:ignore="SmallSp" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <!-- ═══ ACCOUNT ═══ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/press_start_2p"
+                android:text="👤 ACCOUNT"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:layout_marginBottom="12dp"
+                android:shadowColor="#000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_panel"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:id="@+id/btnSettingsChangeEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_button_teal"
+                    android:fontFamily="@font/press_start_2p"
+                    android:gravity="center"
+                    android:text="CHANGE EMAIL"
+                    android:textColor="#000000"
+                    android:textSize="10sp"
+                    android:layout_marginBottom="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    tools:ignore="SmallSp" />
+
+                <TextView
+                    android:id="@+id/btnSettingsChangePassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_button_teal"
+                    android:fontFamily="@font/press_start_2p"
+                    android:gravity="center"
+                    android:text="CHANGE PASSWORD"
+                    android:textColor="#000000"
+                    android:textSize="10sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    tools:ignore="SmallSp" />
+            </LinearLayout>
+
+            <!-- ═══ DANGER ZONE ═══ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/press_start_2p"
+                android:text="☠️ DANGER ZONE"
+                android:textColor="@color/hp_red"
+                android:textSize="12sp"
                 android:layout_marginBottom="12dp"
                 android:shadowColor="#000000"
                 android:shadowDx="2"
@@ -148,96 +288,70 @@
                 android:padding="20dp"
                 android:layout_marginBottom="24dp">
 
-                <RelativeLayout
+                <TextView
+                    android:id="@+id/btnResetProgress"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/press_start_2p"
-                        android:text="@string/alerts"
-                        android:textColor="#333333"
-                        android:textSize="10sp"
-                        android:layout_centerVertical="true"
-                        android:layout_toStartOf="@id/switchAlerts"
-                        tools:ignore="SmallSp,RelativeOverlap" />
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switchAlerts"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:checked="true" />
-                </RelativeLayout>
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_button_orange"
+                    android:fontFamily="@font/press_start_2p"
+                    android:gravity="center"
+                    android:text="@string/reset_progress"
+                    android:textColor="#000000"
+                    android:textSize="10sp"
+                    android:layout_marginBottom="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    tools:ignore="SmallSp" />
 
-                <RelativeLayout
+                <TextView
+                    android:id="@+id/btnDeleteAccount"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <TextView
-                        android:id="@+id/tvLanguageLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/press_start_2p"
-                        android:text="@string/language"
-                        android:textColor="#333333"
-                        android:textSize="10sp"
-                        android:layout_centerVertical="true"
-                        android:layout_toStartOf="@+id/tvLanguageValue"
-                        tools:ignore="SmallSp" />
-                    <TextView
-                        android:id="@id/tvLanguageValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:fontFamily="@font/press_start_2p"
-                        android:text="@string/language_eng"
-                        android:textColor="#000000"
-                        android:textSize="10sp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:background="?attr/selectableItemBackground"
-                        android:padding="8dp"
-                        tools:ignore="SmallSp" />
-                </RelativeLayout>
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_button_orange"
+                    android:fontFamily="@font/press_start_2p"
+                    android:gravity="center"
+                    android:text="DELETE ACCOUNT"
+                    android:textColor="#000000"
+                    android:textSize="10sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    tools:ignore="SmallSp" />
             </LinearLayout>
 
-            <!-- DATA MANAGEMENT -->
-            <TextView
-                android:id="@+id/btnResetProgress"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/bg_button_orange"
-                android:fontFamily="@font/press_start_2p"
-                android:gravity="center"
-                android:text="@string/reset_progress"
-                android:textColor="#000000"
-                android:textSize="12sp"
-                android:layout_marginBottom="24dp"
-                android:clickable="true"
-                android:focusable="true"
-                tools:ignore="SmallSp" />
-
-            <!-- FOOTER INFO -->
+            <!-- FOOTER -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:background="@drawable/bg_panel"
+                android:padding="20dp">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/press_start_2p"
-                    android:text="@string/credits"
-                    android:textColor="@color/gold_light"
-                    android:textSize="8sp"
-                    android:layout_marginBottom="8dp"
+                    android:text="📜 ABOUT"
+                    android:textColor="@color/text_dark"
+                    android:textSize="10sp"
+                    android:layout_marginBottom="12dp"
+                    tools:ignore="SmallSp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/press_start_2p"
+                    android:text="KITAGO - GAMIFIED\nBUDGETING FOR\nADVENTURERS"
+                    android:textColor="@color/text_muted"
+                    android:textSize="7sp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginBottom="12dp"
                     tools:ignore="SmallSp" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/press_start_2p"
                     android:text="@string/version"
-                    android:textColor="@color/text_muted"
+                    android:textColor="@color/gold_light"
                     android:textSize="8sp"
                     tools:ignore="SmallSp" />
             </LinearLayout>

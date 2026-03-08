@@ -63,6 +63,35 @@
                 android:progressDrawable="@drawable/bg_xp_bar"
                 android:layout_marginTop="8dp" />
         </LinearLayout>
+
+        <!-- Settings + Admin buttons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginEnd="4dp">
+
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/ic_menu_preferences"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/settings"
+                app:tint="@color/gold_light" />
+
+            <ImageButton
+                android:id="@+id/btnAdminPanel"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/ic_menu_manage"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Admin Panel"
+                android:visibility="gone"
+                app:tint="@color/hp_red"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <ScrollView

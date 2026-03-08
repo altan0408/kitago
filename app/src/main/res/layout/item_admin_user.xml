@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_panel"
+    android:orientation="horizontal"
+    android:padding="14dp"
+    android:layout_marginBottom="10dp"
+    android:gravity="center_vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <ImageView
+        android:id="@+id/ivUserAvatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/logo_kitago_main"
+        android:background="@drawable/bg_button_gold"
+        android:padding="4dp"
+        android:contentDescription="@string/user_avatar_description" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <TextView
+            android:id="@+id/tvUserName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/press_start_2p"
+            android:text="@string/username_placeholder"
+            android:textColor="@color/text_dark"
+            android:textSize="9sp"
+            android:maxLines="1"
+            tools:ignore="SmallSp" />
+
+        <TextView
+            android:id="@+id/tvUserEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/press_start_2p"
+            android:text="@string/days_remaining_placeholder"
+            android:textColor="@color/text_muted"
+            android:textSize="6sp"
+            android:layout_marginTop="4dp"
+            android:maxLines="1"
+            tools:ignore="SmallSp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/tvUserLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/press_start_2p"
+                android:text="@string/level_placeholder"
+                android:textColor="@color/gold_dark"
+                android:textSize="7sp"
+                android:layout_marginEnd="12dp"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:id="@+id/tvUserBalance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/press_start_2p"
+                android:text="@string/balance_placeholder"
+                android:textColor="@color/hp_green"
+                android:textSize="7sp"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvChevron"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chevron"
+        android:textColor="@color/text_muted"
+        android:textSize="16sp" />
+
+</LinearLayout>
+

@@ -179,7 +179,9 @@ class LoginActivity : ComponentActivity() {
                             userData["xp"] = 0
                             userData["wins"] = 0
                             userData["streak"] = 0
-                            
+                            userData["totalSavedGold"] = 0.0
+                            userData["lastResetMonth"] = "${java.util.Calendar.getInstance().get(java.util.Calendar.MONTH)}_${java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)}"
+
                             userRef.setValue(userData).addOnCompleteListener {
                                 ensureUsernameIsIndexed()
                                 navigateToDashboard()

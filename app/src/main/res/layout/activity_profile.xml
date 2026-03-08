@@ -305,6 +305,56 @@
                     tools:ignore="SmallSp" />
             </LinearLayout>
 
+            <!-- ACCOUNT SECTION -->
+            <LinearLayout
+                android:id="@+id/accountSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_panel"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_marginTop="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/press_start_2p"
+                    android:text="@string/account"
+                    android:textColor="@color/text_dark"
+                    android:textSize="10sp"
+                    android:layout_marginBottom="16dp"
+                    tools:ignore="SmallSp" />
+
+                <TextView
+                    android:id="@+id/btnChangeEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_button_teal"
+                    android:fontFamily="@font/press_start_2p"
+                    android:gravity="center"
+                    android:text="CHANGE EMAIL"
+                    android:textColor="#000000"
+                    android:textSize="10sp"
+                    android:layout_marginBottom="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    tools:ignore="SmallSp" />
+
+                <TextView
+                    android:id="@+id/btnChangePassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_button_teal"
+                    android:fontFamily="@font/press_start_2p"
+                    android:gravity="center"
+                    android:text="CHANGE PASSWORD"
+                    android:textColor="#000000"
+                    android:textSize="10sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    tools:ignore="SmallSp" />
+            </LinearLayout>
+
             <!-- VIEWER ACTIONS -->
             <TextView
                 android:id="@+id/btnUnfriend"
