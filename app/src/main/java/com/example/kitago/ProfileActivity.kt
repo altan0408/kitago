@@ -1,6 +1,5 @@
 package com.example.kitago
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Bitmap
@@ -15,7 +14,7 @@ import android.widget.*
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.scale
+import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.EmailAuthProvider
@@ -23,8 +22,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.io.ByteArrayOutputStream
 
-@SuppressLint("SetTextI18n")
-@Suppress("DEPRECATION")
 class ProfileActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
@@ -63,7 +60,10 @@ class ProfileActivity : ComponentActivity() {
         loadUserProfile()
         setupNavigation()
         
-        if (!isViewerMode) { listenForFriendRequests() }
+        if (!isViewerMode) { 
+            listenForFriendRequests()
+            checkAdminStatus()
+        }
     }
 
     private fun setupUI() {
@@ -76,8 +76,7 @@ class ProfileActivity : ComponentActivity() {
             findViewById<ImageButton>(R.id.btnAddFriend).visibility = View.GONE
             findViewById<LinearLayout>(R.id.requestsLayout).visibility = View.GONE
             findViewById<ImageView>(R.id.ivCameraIcon).visibility = View.GONE
-            findViewById<LinearLayout>(R.id.accountSection).visibility = View.GONE
-
+            
             val btnUnfriend = findViewById<TextView>(R.id.btnUnfriend)
             btnUnfriend.visibility = View.VISIBLE
             btnUnfriend.setOnClickListener { showUnfriendDialog() }
@@ -88,10 +87,29 @@ class ProfileActivity : ComponentActivity() {
                 imagePickerLauncher.launch(intent)
             }
             findViewById<ImageButton>(R.id.btnAddFriend).setOnClickListener { showAddFriendDialog() }
-            findViewById<TextView>(R.id.btnSignOut).setOnClickListener { showSignOutDialog() }
+            findViewById<TextView>(R.id.btnSignOut).setOnClickListener { signOut() }
             findViewById<TextView>(R.id.btnUnfriend).visibility = View.GONE
-            findViewById<TextView>(R.id.btnChangeEmail).setOnClickListener { showChangeEmailDialog() }
-            findViewById<TextView>(R.id.btnChangePassword).setOnClickListener { showChangePasswordDialog() }
+            
+            findViewById<TextView>(R.id.tvEmailProfile).setOnClickListener { showEditAccountDialog() }
+        }
+    }
+
+    private fun checkAdminStatus() {
+        val uid = auth.currentUser?.uid ?: return
+        FirebaseDatabase.getInstance().reference.child("admins").child(uid).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val btnAdmin = TextView(this).apply {
+                    text = "🛡️ ADMIN PANEL"
+                    typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+                    textSize = 10f
+                    setTextColor(getColor(R.color.gold_light))
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(0, 40, 0, 40)
+                    setOnClickListener { startActivity(Intent(this@ProfileActivity, AdminActivity::class.java)) }
+                }
+                val container = findViewById<LinearLayout>(R.id.profileXpBar).parent as LinearLayout
+                container.addView(btnAdmin)
+            }
         }
     }
 
@@ -107,27 +125,109 @@ class ProfileActivity : ComponentActivity() {
                 val streak = snapshot.child("streak").getValue(Int::class.java) ?: 0
                 val xp = snapshot.child("xp").getValue(Int::class.java) ?: 0
                 val pic = snapshot.child("profilePic").getValue(String::class.java)
-                val totalSaved = snapshot.child("totalSavedGold").getValue(Double::class.java) ?: 0.0
 
                 findViewById<TextView>(R.id.tvUsernameProfile).text = currentUsername!!.uppercase()
                 findViewById<TextView>(R.id.tvEmailProfile).text = email
-                findViewById<TextView>(R.id.tvLevel).text = "LEVEL $level"
+                findViewById<TextView>(R.id.tvLevel).text = "LEVEL $level (${DataManager.getLevelTitle(level)})"
                 findViewById<TextView>(R.id.tvWins).text = "WINS: $wins"
-                findViewById<TextView>(R.id.tvStreak).text = "\uD83D\uDD25 STREAK: $streak DAYS"
-                findViewById<TextView>(R.id.tvTotalSaved).text = "TOTAL SAVED: ₱${totalSaved.toInt()}"
-
-                val xpNeeded = DataManager.getXpNeededForLevel(level)
+                findViewById<TextView>(R.id.tvStreak).text = "MAX STREAK: $streak DAYS"
+                
                 val xpBar = findViewById<ProgressBar>(R.id.profileXpBar)
-                xpBar.max = xpNeeded
+                xpBar.max = DataManager.getXpNeededForLevel(level)
                 xpBar.progress = xp
-                findViewById<TextView>(R.id.tvXpLabel).text = "$xp / $xpNeeded XP"
 
-                loadProfileImage(pic, findViewById(R.id.ivLargeAvatar))
+                ImageUtils.loadProfileImage(this@ProfileActivity, pic, findViewById(R.id.ivLargeAvatar))
                 loadFriends(snapshot.child("friends"))
                 loadBadges(snapshot.child("badges"))
             }
             override fun onCancelled(error: DatabaseError) {}
         })
+    }
+
+    private fun showEditAccountDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "ACCOUNT SETTINGS"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "UPDATE YOUR INFO:"
+        
+        val container = dialogView as LinearLayout
+        
+        val btnEmail = Button(this).apply { text = "CHANGE EMAIL"; setOnClickListener { dialog.dismiss(); showEmailUpdateDialog() } }
+        val btnPass = Button(this).apply { text = "CHANGE PASSWORD"; setOnClickListener { dialog.dismiss(); showPasswordUpdateDialog() } }
+        
+        container.addView(btnEmail, 2)
+        container.addView(btnPass, 3)
+        
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "CANCEL"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener { dialog.dismiss() }
+        
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun showEmailUpdateDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        val emailInput = EditText(this).apply { hint = "New Email"; setBackgroundResource(R.drawable.bg_input) }
+        val passInput = EditText(this).apply { hint = "Password"; setBackgroundResource(R.drawable.bg_input); inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD }
+        
+        val container = dialogView as LinearLayout
+        container.addView(emailInput, 2)
+        container.addView(passInput, 3)
+        
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "UPDATE EMAIL"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "UPDATE"
+            setOnClickListener {
+                val newEmail = emailInput.text.toString().trim()
+                val password = passInput.text.toString()
+                if (newEmail.isEmpty() || password.isEmpty()) return@setOnClickListener
+                
+                val user = auth.currentUser!!
+                val credential = EmailAuthProvider.getCredential(user.email!!, password)
+                user.reauthenticate(credential).addOnSuccessListener {
+                    user.updateEmail(newEmail).addOnSuccessListener {
+                        userRef.child("email").setValue(newEmail)
+                        Toast.makeText(this@ProfileActivity, "EMAIL UPDATED!", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }.addOnFailureListener { Toast.makeText(this@ProfileActivity, "FAILED!", Toast.LENGTH_SHORT).show() }
+                }.addOnFailureListener { Toast.makeText(this@ProfileActivity, "WRONG PASSWORD!", Toast.LENGTH_SHORT).show() }
+            }
+        }
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun showPasswordUpdateDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        val oldPass = EditText(this).apply { hint = "Old Password"; setBackgroundResource(R.drawable.bg_input); inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD }
+        val newPass = EditText(this).apply { hint = "New Password"; setBackgroundResource(R.drawable.bg_input); inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD }
+        
+        val container = dialogView as LinearLayout
+        container.addView(oldPass, 2)
+        container.addView(newPass, 3)
+        
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "UPDATE PASSWORD"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "UPDATE"
+            setOnClickListener {
+                val op = oldPass.text.toString()
+                val np = newPass.text.toString()
+                if (op.isEmpty() || np.length < 6) { Toast.makeText(this@ProfileActivity, "MIN 6 CHARS!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+                
+                val user = auth.currentUser!!
+                val credential = EmailAuthProvider.getCredential(user.email!!, op)
+                user.reauthenticate(credential).addOnSuccessListener {
+                    user.updatePassword(np).addOnSuccessListener {
+                        Toast.makeText(this@ProfileActivity, "PASSWORD UPDATED!", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }.addOnFailureListener { Toast.makeText(this@ProfileActivity, "FAILED!", Toast.LENGTH_SHORT).show() }
+                }.addOnFailureListener { Toast.makeText(this@ProfileActivity, "WRONG PASSWORD!", Toast.LENGTH_SHORT).show() }
+            }
+        }
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
     }
 
     private fun loadFriends(friendsSnapshot: DataSnapshot) {
@@ -148,14 +248,12 @@ class ProfileActivity : ComponentActivity() {
     }
 
     private fun addFriendToView(container: LinearLayout, fId: String, name: String, lvl: Int, pic: String?) {
-        // Prevent Duplicates: check if view with this ID tag already exists
         if (container.findViewWithTag<View>(fId) != null) return
-
         val view = LayoutInflater.from(this).inflate(R.layout.item_friend, container, false)
         view.tag = fId
         view.findViewById<TextView>(R.id.tvFriendName).text = name.uppercase()
         view.findViewById<TextView>(R.id.tvFriendLevel).text = "LVL $lvl"
-        loadProfileImage(pic, view.findViewById(R.id.ivFriendAvatar))
+        ImageUtils.loadProfileImage(this, pic, view.findViewById(R.id.ivFriendAvatar))
         
         view.setOnClickListener {
             val intent = Intent(this, ProfileActivity::class.java)
@@ -172,19 +270,8 @@ class ProfileActivity : ComponentActivity() {
         dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "REMOVE $currentUsername?"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
             text = "UNFRIEND"
-            setBackgroundResource(R.drawable.bg_button_orange)
             setOnClickListener { unfriendUser(); dialog.dismiss() }
         }
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-            textSize = 12f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted))
-            setOnClickListener { dialog.dismiss() }
-        }
-        (dialogView as LinearLayout).addView(btnCancel)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
@@ -246,98 +333,33 @@ class ProfileActivity : ComponentActivity() {
         }
         (dialogView as LinearLayout).addView(input, 2)
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "ADD PARTY"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER ADVENTURER NAME:"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
             text = "SEND"
             setOnClickListener {
                 val name = input.text.toString().trim().lowercase().replace(" ", "_")
-                if (name.isEmpty()) {
-                    Toast.makeText(this@ProfileActivity, "ENTER A USERNAME!", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
                 usernamesRef.child(name).get().addOnSuccessListener { s ->
                     if (s.exists()) {
                         val fId = s.value.toString()
-                        if (fId == auth.currentUser!!.uid) {
-                            Toast.makeText(this@ProfileActivity, "CAN'T ADD YOURSELF!", Toast.LENGTH_SHORT).show()
-                        } else {
-                            FirebaseDatabase.getInstance().reference.child("friend_requests").child(fId).child(auth.currentUser!!.uid).setValue(currentUsername)
-                            Toast.makeText(this@ProfileActivity, "REQUEST SENT!", Toast.LENGTH_SHORT).show()
-                            dialog.dismiss()
-                        }
+                        FirebaseDatabase.getInstance().reference.child("friend_requests").child(fId).child(auth.currentUser!!.uid).setValue(currentUsername)
+                        Toast.makeText(this@ProfileActivity, "REQUEST SENT!", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
                     } else { Toast.makeText(this@ProfileActivity, "NOT FOUND!", Toast.LENGTH_SHORT).show() }
                 }
             }
         }
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-            textSize = 12f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted))
-            setOnClickListener { dialog.dismiss() }
-        }
-        dialogView.addView(btnCancel)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
-    }
-
-    private fun loadProfileImage(data: String?, imageView: ImageView) {
-        ImageUtils.loadProfileImage(this, data, imageView)
     }
 
     private fun loadBadges(badgesSnapshot: DataSnapshot) {
         val grid = findViewById<GridLayout>(R.id.badgeGrid)
         grid.removeAllViews()
-
-        if (!badgesSnapshot.hasChildren()) {
-            val emptyText = TextView(this).apply {
-                text = "NO BADGES YET"
-                typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-                textSize = 8f
-                setTextColor(getColor(R.color.text_muted))
-                gravity = android.view.Gravity.CENTER
-                setPadding(16, 32, 16, 32)
-                layoutParams = GridLayout.LayoutParams().apply {
-                    columnSpec = GridLayout.spec(0, 3)
-                    width = GridLayout.LayoutParams.MATCH_PARENT
-                }
-            }
-            grid.addView(emptyText)
-            return
-        }
-
         for (badge in badgesSnapshot.children) {
-            val badgeName = badge.getValue(String::class.java) ?: badge.key ?: "BADGE"
-            val badgeView = LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                gravity = android.view.Gravity.CENTER
-                setPadding(8, 8, 8, 8)
-                layoutParams = GridLayout.LayoutParams().apply {
-                    width = 0
-                    height = GridLayout.LayoutParams.WRAP_CONTENT
-                    columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                    setMargins(4, 4, 4, 4)
-                }
-                setBackgroundResource(R.drawable.bg_panel)
-            }
             val icon = ImageView(this).apply {
-                layoutParams = LinearLayout.LayoutParams(64, 64).apply { setMargins(0, 8, 0, 4) }
+                layoutParams = GridLayout.LayoutParams().apply { width = 100; height = 100; setMargins(8, 8, 8, 8) }
                 setImageResource(android.R.drawable.btn_star_big_on)
             }
-            val label = TextView(this).apply {
-                text = badgeName
-                typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-                textSize = 6f
-                setTextColor(getColor(R.color.text_dark))
-                gravity = android.view.Gravity.CENTER
-                setPadding(4, 0, 4, 8)
-                maxLines = 2
-            }
-            badgeView.addView(icon)
-            badgeView.addView(label)
-            grid.addView(badgeView)
+            grid.addView(icon)
         }
     }
 
@@ -350,18 +372,9 @@ class ProfileActivity : ComponentActivity() {
         }
         (dialogView as LinearLayout).addView(input, 2)
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "CHANGE NAME"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER NEW ADVENTURER NAME:"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener {
             val n = input.text.toString().trim()
-            if (n.isEmpty()) {
-                Toast.makeText(this@ProfileActivity, "NAME CAN'T BE EMPTY!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (n.length > 30) {
-                Toast.makeText(this@ProfileActivity, "NAME TOO LONG! (MAX 30)", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (n != currentUsername) {
+            if (n.isNotEmpty() && n != currentUsername) {
                 val clean = n.lowercase().replace(" ", "_")
                 usernamesRef.child(clean).get().addOnSuccessListener { s ->
                     if (s.exists() && s.value != auth.currentUser!!.uid) { Toast.makeText(this@ProfileActivity, "TAKEN!", Toast.LENGTH_SHORT).show() }
@@ -373,16 +386,6 @@ class ProfileActivity : ComponentActivity() {
                 }
             } else { dialog.dismiss() }
         }
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-            textSize = 12f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted))
-            setOnClickListener { dialog.dismiss() }
-        }
-        dialogView.addView(btnCancel)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
@@ -391,174 +394,11 @@ class ProfileActivity : ComponentActivity() {
         try {
             val inputStream = contentResolver.openInputStream(uri)
             val bitmap = BitmapFactory.decodeStream(inputStream)
-            if (bitmap == null) {
-                Toast.makeText(this, "FAILED TO LOAD IMAGE!", Toast.LENGTH_SHORT).show()
-                return
-            }
-            val scaled = bitmap.scale(200, 200, true)
+            val scaled = Bitmap.createScaledBitmap(bitmap, 200, 200, true)
             val out = ByteArrayOutputStream()
             scaled.compress(Bitmap.CompressFormat.JPEG, 70, out)
             userRef.child("profilePic").setValue(Base64.encodeToString(out.toByteArray(), Base64.DEFAULT))
-                .addOnSuccessListener { Toast.makeText(this, "AVATAR UPDATED!", Toast.LENGTH_SHORT).show() }
-                .addOnFailureListener { Toast.makeText(this, "UPLOAD FAILED!", Toast.LENGTH_SHORT).show() }
-        } catch (_: Exception) {
-            Toast.makeText(this, "FAILED TO PROCESS IMAGE!", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun showChangeEmailDialog() {
-        val user = auth.currentUser ?: return
-        // Google users can't change email via password re-auth
-        if (user.providerData.any { it.providerId == "google.com" } && user.providerData.none { it.providerId == "password" }) {
-            Toast.makeText(this, "GOOGLE ACCOUNTS MANAGE EMAIL VIA GOOGLE!", Toast.LENGTH_LONG).show()
-            return
-        }
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
-        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
-        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "CHANGE EMAIL"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER CURRENT PASSWORD\nAND NEW EMAIL:"
-
-        val inputPassword = EditText(this).apply {
-            hint = "CURRENT PASSWORD"; inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 10f; setPadding(40, 40, 40, 40)
-            setBackgroundResource(R.drawable.bg_input)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
-        }
-        val inputEmail = EditText(this).apply {
-            hint = "NEW EMAIL"; inputType = android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 10f; setPadding(40, 40, 40, 40)
-            setBackgroundResource(R.drawable.bg_input)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
-        }
-        val container = dialogView as LinearLayout
-        container.addView(inputPassword, 2)
-        container.addView(inputEmail, 3)
-
-        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
-            text = "UPDATE"
-            setOnClickListener {
-                val pass = inputPassword.text.toString().trim()
-                val newEmail = inputEmail.text.toString().trim()
-                if (pass.isEmpty() || newEmail.isEmpty()) { Toast.makeText(this@ProfileActivity, "FILL ALL FIELDS!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) { Toast.makeText(this@ProfileActivity, "INVALID EMAIL!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-
-                val credential = EmailAuthProvider.getCredential(user.email!!, pass)
-                user.reauthenticate(credential).addOnSuccessListener {
-                    @Suppress("DEPRECATION")
-                    user.verifyBeforeUpdateEmail(newEmail).addOnSuccessListener {
-                        userRef.child("email").setValue(newEmail)
-                        Toast.makeText(this@ProfileActivity, "VERIFICATION SENT TO NEW EMAIL!", Toast.LENGTH_LONG).show()
-                        dialog.dismiss()
-                    }.addOnFailureListener { e -> Toast.makeText(this@ProfileActivity, "FAILED: ${e.message}", Toast.LENGTH_LONG).show() }
-                }.addOnFailureListener { Toast.makeText(this@ProfileActivity, "WRONG PASSWORD!", Toast.LENGTH_SHORT).show() }
-            }
-        }
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"; typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-            textSize = 12f; gravity = android.view.Gravity.CENTER; setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted)); setOnClickListener { dialog.dismiss() }
-        }
-        container.addView(btnCancel)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.show()
-    }
-
-    private fun showChangePasswordDialog() {
-        val user = auth.currentUser ?: return
-        if (user.providerData.any { it.providerId == "google.com" } && user.providerData.none { it.providerId == "password" }) {
-            Toast.makeText(this, "GOOGLE ACCOUNTS MANAGE PASSWORD VIA GOOGLE!", Toast.LENGTH_LONG).show()
-            return
-        }
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
-        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
-        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "CHANGE PASSWORD"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER CURRENT AND\nNEW PASSWORD:"
-
-        val inputCurrent = EditText(this).apply {
-            hint = "CURRENT PASSWORD"; inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 10f; setPadding(40, 40, 40, 40)
-            setBackgroundResource(R.drawable.bg_input)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
-        }
-        val inputNew = EditText(this).apply {
-            hint = "NEW PASSWORD"; inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 10f; setPadding(40, 40, 40, 40)
-            setBackgroundResource(R.drawable.bg_input)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
-        }
-        val tvStrength = TextView(this).apply {
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 7f
-            visibility = View.GONE
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
-        }
-        inputNew.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) {
-                val p = s?.toString() ?: ""
-                if (p.isEmpty()) { tvStrength.visibility = View.GONE; return }
-                val r = PasswordValidator.validate(p)
-                tvStrength.visibility = View.VISIBLE
-                tvStrength.text = r.strength.label
-                tvStrength.setTextColor(r.strength.color)
-            }
-        })
-
-        val container = dialogView as LinearLayout
-        container.addView(inputCurrent, 2)
-        container.addView(inputNew, 3)
-        container.addView(tvStrength, 4)
-
-        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
-            text = "UPDATE"
-            setOnClickListener {
-                val currentPass = inputCurrent.text.toString().trim()
-                val newPass = inputNew.text.toString().trim()
-                if (currentPass.isEmpty() || newPass.isEmpty()) { Toast.makeText(this@ProfileActivity, "FILL ALL FIELDS!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-                val result = PasswordValidator.validate(newPass)
-                if (!result.isValid) { Toast.makeText(this@ProfileActivity, "NEEDS: ${result.errors.joinToString(", ")}", Toast.LENGTH_LONG).show(); return@setOnClickListener }
-
-                val credential = EmailAuthProvider.getCredential(user.email!!, currentPass)
-                user.reauthenticate(credential).addOnSuccessListener {
-                    user.updatePassword(newPass).addOnSuccessListener {
-                        Toast.makeText(this@ProfileActivity, "PASSWORD UPDATED!", Toast.LENGTH_SHORT).show()
-                        dialog.dismiss()
-                    }.addOnFailureListener { e -> Toast.makeText(this@ProfileActivity, "FAILED: ${e.message}", Toast.LENGTH_LONG).show() }
-                }.addOnFailureListener { Toast.makeText(this@ProfileActivity, "WRONG CURRENT PASSWORD!", Toast.LENGTH_SHORT).show() }
-            }
-        }
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"; typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-            textSize = 12f; gravity = android.view.Gravity.CENTER; setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted)); setOnClickListener { dialog.dismiss() }
-        }
-        container.addView(btnCancel)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.show()
-    }
-
-    private fun showSignOutDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
-        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
-        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "SIGN OUT"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ARE YOU SURE YOU WANT TO SIGN OUT?"
-        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
-            text = "SIGN OUT"
-            setBackgroundResource(R.drawable.bg_button_orange)
-            setOnClickListener { signOut(); dialog.dismiss() }
-        }
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"
-            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-            textSize = 12f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted))
-            setOnClickListener { dialog.dismiss() }
-        }
-        (dialogView as LinearLayout).addView(btnCancel)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.show()
+        } catch (e: Exception) {}
     }
 
     private fun signOut() {
@@ -574,18 +414,9 @@ class ProfileActivity : ComponentActivity() {
     }
 
     private fun setupNavigation() {
-        findViewById<ImageButton>(R.id.navHome).setOnClickListener {
-            startActivity(Intent(this, DashboardActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-        }
-        findViewById<ImageButton>(R.id.navGoals).setOnClickListener {
-            startActivity(Intent(this, GoalsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-        }
-        findViewById<ImageButton>(R.id.navAdd).setOnClickListener {
-            startActivity(Intent(this, AddTransactionActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-        }
-        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener {
-            startActivity(Intent(this, ChallengesActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-        }
-        findViewById<ImageButton>(R.id.navProfile).setOnClickListener { /* Already on profile */ }
+        findViewById<ImageButton>(R.id.navHome).setOnClickListener { startActivity(Intent(this, DashboardActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navGoals).setOnClickListener { startActivity(Intent(this, GoalsActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navAdd).setOnClickListener { startActivity(Intent(this, AddTransactionActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener { startActivity(Intent(this, ChallengesActivity::class.java)) }
     }
 }

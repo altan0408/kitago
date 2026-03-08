@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:fontFamily="@font/press_start_2p"
-        android:text="🛡️ ADMIN PANEL"
+        android:text="🛡️ ADMIN PORTAL"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:shadowColor="#000000"
@@ -56,40 +56,79 @@
         app:layout_constraintTop_toBottomOf="@id/tvAdminTitle"
         tools:ignore="SmallSp" />
 
-    <!-- MANAGE ADMINS BUTTON (super_admin only) -->
-    <TextView
-        android:id="@+id/btnManageAdmins"
-        android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/bg_button_gold"
-        android:fontFamily="@font/press_start_2p"
-        android:gravity="center"
+    <!-- ADMIN CONTROL PANEL -->
+    <HorizontalScrollView
+        android:id="@+id/adminTools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:paddingHorizontal="16dp"
-        android:text="MANAGE ADMINS"
-        android:textColor="#000000"
-        android:textSize="8sp"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvAdminRole"
-        tools:ignore="SmallSp" />
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/tvAdminRole">
 
-    <!-- USER COUNT -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnManageAdmins"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_button_gold"
+                android:fontFamily="@font/press_start_2p"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="STAFF"
+                android:textColor="#000000"
+                android:textSize="8sp"
+                android:visibility="gone"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:id="@+id/btnGameConfig"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_button_teal"
+                android:fontFamily="@font/press_start_2p"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="CONFIG"
+                android:textColor="#000000"
+                android:textSize="8sp"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:id="@+id/btnGlobalPromo"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_button_orange"
+                android:fontFamily="@font/press_start_2p"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="GLOBAL PROMO"
+                android:textColor="#000000"
+                android:textSize="8sp"
+                tools:ignore="SmallSp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- USER LIST SECTION -->
     <TextView
         android:id="@+id/tvUserCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="16dp"
         android:fontFamily="@font/press_start_2p"
-        android:text="USERS: 0"
+        android:text="TOTAL USERS: 0"
         android:textColor="@color/text_muted"
         android:textSize="8sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnManageAdmins"
+        app:layout_constraintTop_toBottomOf="@id/adminTools"
         tools:ignore="SmallSp" />
 
     <ScrollView
@@ -110,4 +149,3 @@
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

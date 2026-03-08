@@ -36,7 +36,7 @@ class LoginActivity : ComponentActivity() {
             firebaseAuthWithGoogle(account.idToken!!)
         } catch (e: ApiException) {
             Log.e("LoginActivity", "Google sign in failed, code=${e.statusCode}", e)
-            Toast.makeText(this, "Google Sign-In failed (code: ${e.statusCode})", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -67,9 +67,7 @@ class LoginActivity : ComponentActivity() {
                 firebaseAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this) { task ->
                         if (task.isSuccessful) {
-                            // Ensure existing manual users are indexed on login
-                            ensureUsernameIsIndexed()
-                            navigateToDashboard()
+                            checkRoleAndNavigate()
                         } else {
                             showGameDialog("LOGIN FAILED", task.exception?.message ?: "Invalid credentials.") {
                                 etPassword.text.clear()
@@ -80,7 +78,6 @@ class LoginActivity : ComponentActivity() {
         }
 
         ivGoogle.setOnClickListener {
-            // Sign out first to force account picker and avoid stale credentials
             googleSignInClient.signOut().addOnCompleteListener {
                 val signInIntent = googleSignInClient.signInIntent
                 googleSignInLauncher.launch(signInIntent)
@@ -93,6 +90,37 @@ class LoginActivity : ComponentActivity() {
 
         findViewById<TextView>(R.id.tvForgotPassword).setOnClickListener {
             showForgotPasswordDialog(etEmail.text.toString().trim())
+        }
+    }
+
+    private fun checkRoleAndNavigate() {
+        val user = firebaseAuth.currentUser ?: return
+        val db = FirebaseDatabase.getInstance().reference
+        
+        // Load global config first
+        DataManager.fetchGlobalConfig()
+
+        db.child("admins").child(user.uid).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                // User is an ADMIN
+                val intent = Intent(this, AdminActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+                Toast.makeText(this, "ADMIN PORTAL ACCESS", Toast.LENGTH_SHORT).show()
+            } else {
+                // Regular USER
+                ensureUsernameIsIndexed()
+                val intent = Intent(this, DashboardActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+        }.addOnFailureListener {
+            // Fallback to Dashboard if check fails
+            val intent = Intent(this, DashboardActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 
@@ -125,25 +153,13 @@ class LoginActivity : ComponentActivity() {
                     .addOnCompleteListener { task ->
                         dialog.dismiss()
                         if (task.isSuccessful) {
-                            showGameDialog("EMAIL SENT!", "CHECK YOUR INBOX FOR\nTHE RESET LINK.\n\nDON'T FORGET TO CHECK SPAM!") {}
+                            showGameDialog("EMAIL SENT!", "CHECK YOUR INBOX.") {}
                         } else {
-                            showGameDialog("FAILED", task.exception?.message ?: "COULD NOT SEND RESET EMAIL.") {}
+                            showGameDialog("FAILED", task.exception?.message ?: "ERROR.") {}
                         }
                     }
             }
         }
-
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"
-            typeface = ResourcesCompat.getFont(this@LoginActivity, R.font.press_start_2p)
-            textSize = 12f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted))
-            setOnClickListener { dialog.dismiss() }
-        }
-        dialogView.addView(btnCancel)
-
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
@@ -180,15 +196,9 @@ class LoginActivity : ComponentActivity() {
                             userData["wins"] = 0
                             userData["streak"] = 0
                             userData["totalSavedGold"] = 0.0
-                            userData["lastResetMonth"] = "${java.util.Calendar.getInstance().get(java.util.Calendar.MONTH)}_${java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)}"
-
-                            userRef.setValue(userData).addOnCompleteListener {
-                                ensureUsernameIsIndexed()
-                                navigateToDashboard()
-                            }
+                            userRef.setValue(userData).addOnCompleteListener { checkRoleAndNavigate() }
                         } else {
-                            ensureUsernameIsIndexed()
-                            navigateToDashboard()
+                            checkRoleAndNavigate()
                         }
                     }
                 } else {
@@ -207,13 +217,6 @@ class LoginActivity : ComponentActivity() {
                 db.child("usernames").child(cleanName).setValue(user.uid)
             }
         }
-    }
-
-    private fun navigateToDashboard() {
-        val intent = Intent(this, DashboardActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
     }
 
     private fun showGameDialog(title: String, message: String, onOk: () -> Unit) {

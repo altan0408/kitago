@@ -33,6 +33,11 @@ class AdminActivity : ComponentActivity() {
         // Check admin role
         db.child("admins").child(uid).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    Toast.makeText(this@AdminActivity, "UNAUTHORIZED ACCESS!", Toast.LENGTH_SHORT).show()
+                    finish()
+                    return
+                }
                 myRole = snapshot.child("role").getValue(String::class.java) ?: "admin"
                 findViewById<TextView>(R.id.tvAdminRole).text = myRole.uppercase().replace("_", " ")
 
@@ -47,7 +52,8 @@ class AdminActivity : ComponentActivity() {
             override fun onCancelled(error: DatabaseError) {}
         })
 
-        // Load all users in realtime
+        findViewById<TextView>(R.id.btnGameConfig).setOnClickListener { showGameConfigDialog() }
+
         loadUsers()
     }
 
@@ -84,9 +90,114 @@ class AdminActivity : ComponentActivity() {
         val avatar = view.findViewById<ImageView>(R.id.ivUserAvatar)
         ImageUtils.loadProfileImage(this, pic, avatar)
 
-        view.setOnClickListener { showUserDetailDialog(uid, name, userSnap) }
+        view.setOnClickListener { showUserActionDialog(uid, name, userSnap) }
 
         usersContainer.addView(view)
+    }
+
+    private fun showUserActionDialog(uid: String, name: String, userSnap: DataSnapshot) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "MANAGE USER"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "SELECT ACTION FOR:\n${name.uppercase()}"
+
+        val container = dialogView as LinearLayout
+        
+        val btnEdit = Button(this).apply {
+            text = "PROMOS / EDIT STATS"
+            setOnClickListener {
+                dialog.dismiss()
+                showEditUserStatsDialog(uid, name, userSnap)
+            }
+        }
+        container.addView(btnEdit, 2)
+
+        val btnDelete = Button(this).apply {
+            text = "DELETE USER"
+            setTextColor(getColor(R.color.hp_red))
+            setOnClickListener {
+                dialog.dismiss()
+                showConfirmDeleteUserDialog(uid, name)
+            }
+        }
+        container.addView(btnDelete, 3)
+
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "VIEW DETAILS"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener {
+            dialog.dismiss()
+            showUserDetailDialog(uid, name, userSnap)
+        }
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun showEditUserStatsDialog(uid: String, name: String, userSnap: DataSnapshot) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "EDIT USER"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "MODIFYING: $name"
+
+        val currentBalance = userSnap.child("balance").getValue(Double::class.java) ?: 0.0
+        val currentLevel = userSnap.child("level").getValue(Int::class.java) ?: 1
+
+        val editBalance = EditText(this).apply {
+            hint = "Balance"
+            setText(currentBalance.toString())
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            setBackgroundResource(R.drawable.bg_input)
+        }
+        val editLevel = EditText(this).apply {
+            hint = "Level"
+            setText(currentLevel.toString())
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            setBackgroundResource(R.drawable.bg_input)
+        }
+
+        val container = dialogView as LinearLayout
+        container.addView(editBalance, 2)
+        container.addView(editLevel, 3)
+
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "APPLY"
+            setOnClickListener {
+                val newBal = editBalance.text.toString().toDoubleOrNull() ?: currentBalance
+                val newLvl = editLevel.text.toString().toIntOrNull() ?: currentLevel
+                
+                val updates = hashMapOf<String, Any>(
+                    "balance" to newBal,
+                    "level" to newLvl
+                )
+                db.child("users").child(uid).updateChildren(updates).addOnSuccessListener {
+                    Toast.makeText(this@AdminActivity, "USER UPDATED!", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun showConfirmDeleteUserDialog(uid: String, name: String) {
+        AlertDialog.Builder(this)
+            .setTitle("PURGE USER?")
+            .setMessage("THIS WILL PERMANENTLY REMOVE $name.")
+            .setPositiveButton("DELETE") { _, _ ->
+                db.child("users").child(uid).removeValue().addOnSuccessListener {
+                    db.child("usernames").orderByValue().equalTo(uid).addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(s: DataSnapshot) {
+                            for (child in s.children) child.ref.removeValue()
+                        }
+                        override fun onCancelled(error: DatabaseError) {}
+                    })
+                    Toast.makeText(this, "USER REMOVED", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("CANCEL", null)
+            .show()
     }
 
     private fun showUserDetailDialog(uid: String, name: String, userSnap: DataSnapshot) {
@@ -102,9 +213,6 @@ class AdminActivity : ComponentActivity() {
         val wins = userSnap.child("wins").getValue(Int::class.java) ?: 0
         val streak = userSnap.child("streak").getValue(Int::class.java) ?: 0
         val totalSaved = userSnap.child("totalSavedGold").getValue(Double::class.java) ?: 0.0
-        val goalCount = userSnap.child("goals").childrenCount
-        val friendCount = userSnap.child("friends").childrenCount
-        val badgeCount = userSnap.child("badges").childrenCount
 
         val details = StringBuilder()
         details.appendLine("EMAIL: $email")
@@ -112,10 +220,7 @@ class AdminActivity : ComponentActivity() {
         details.appendLine("BALANCE: ₱${String.format(Locale.getDefault(), "%.2f", balance)}")
         details.appendLine("WINS: $wins  STREAK: $streak")
         details.appendLine("TOTAL SAVED: ₱${totalSaved.toInt()}")
-        details.appendLine("QUESTS: $goalCount")
-        details.appendLine("FRIENDS: $friendCount")
-        details.appendLine("BADGES: $badgeCount")
-        details.appendLine("UID: ${uid.take(12)}...")
+        details.appendLine("UID: $uid")
 
         dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = details.toString()
         dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "CLOSE"
@@ -129,8 +234,8 @@ class AdminActivity : ComponentActivity() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
 
-        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "MANAGE ADMINS"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER USERNAME TO\nADD/REMOVE AS ADMIN:"
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "STAFF MANAGEMENT"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER USERNAME TO PROMOTE/DEMOTE:"
 
         val input = EditText(this).apply {
             hint = "username"
@@ -150,12 +255,9 @@ class AdminActivity : ComponentActivity() {
             }
         }
 
-        val btnRemove = TextView(this).apply {
+        val btnRemove = Button(this).apply {
             text = "REMOVE ADMIN"
-            typeface = ResourcesCompat.getFont(this@AdminActivity, R.font.press_start_2p)
-            textSize = 10f; gravity = android.view.Gravity.CENTER; setPadding(0, 20, 0, 10)
-            setTextColor(getColor(R.color.hp_red)); setBackgroundResource(R.drawable.bg_button_orange)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 120).apply { setMargins(0, 16, 0, 0) }
+            setTextColor(getColor(R.color.hp_red))
             setOnClickListener {
                 val username = input.text.toString().trim().lowercase().replace(" ", "_")
                 if (username.isEmpty()) { Toast.makeText(this@AdminActivity, "ENTER USERNAME!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
@@ -163,13 +265,6 @@ class AdminActivity : ComponentActivity() {
             }
         }
         container.addView(btnRemove)
-
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"; typeface = ResourcesCompat.getFont(this@AdminActivity, R.font.press_start_2p)
-            textSize = 12f; gravity = android.view.Gravity.CENTER; setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted)); setOnClickListener { dialog.dismiss() }
-        }
-        container.addView(btnCancel)
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
@@ -179,13 +274,10 @@ class AdminActivity : ComponentActivity() {
         db.child("usernames").child(username).get().addOnSuccessListener { snap ->
             if (!snap.exists()) { Toast.makeText(this, "USER NOT FOUND!", Toast.LENGTH_SHORT).show(); return@addOnSuccessListener }
             val targetUid = snap.value.toString()
-            db.child("users").child(targetUid).child("email").get().addOnSuccessListener { emailSnap ->
-                val email = emailSnap.getValue(String::class.java) ?: ""
-                val adminData = hashMapOf<String, Any>("role" to "admin", "email" to email)
-                db.child("admins").child(targetUid).setValue(adminData).addOnSuccessListener {
-                    Toast.makeText(this, "ADMIN ADDED!", Toast.LENGTH_SHORT).show()
-                    dialog.dismiss()
-                }
+            val adminData = hashMapOf<String, Any>("role" to "admin")
+            db.child("admins").child(targetUid).setValue(adminData).addOnSuccessListener {
+                Toast.makeText(this, "NEW ADMIN APPOINTED!", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
             }
         }
     }
@@ -194,16 +286,50 @@ class AdminActivity : ComponentActivity() {
         db.child("usernames").child(username).get().addOnSuccessListener { snap ->
             if (!snap.exists()) { Toast.makeText(this, "USER NOT FOUND!", Toast.LENGTH_SHORT).show(); return@addOnSuccessListener }
             val targetUid = snap.value.toString()
-            // Don't allow removing self
             if (targetUid == FirebaseAuth.getInstance().currentUser?.uid) {
-                Toast.makeText(this, "CAN'T REMOVE YOURSELF!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "CANNOT DEMOTE YOURSELF!", Toast.LENGTH_SHORT).show()
                 return@addOnSuccessListener
             }
             db.child("admins").child(targetUid).removeValue().addOnSuccessListener {
-                Toast.makeText(this, "ADMIN REMOVED!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "ADMIN PRIVILEGES REVOKED!", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
         }
     }
-}
 
+    private fun showGameConfigDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "GAME CONFIG"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "GLOBAL SETTINGS:"
+
+        val container = dialogView as LinearLayout
+
+        db.child("game_config").get().addOnSuccessListener { snapshot ->
+            val currentMax = snapshot.child("max_level").getValue(Int::class.java) ?: 50
+            
+            val editMaxLevel = EditText(this).apply {
+                hint = "Max Level"
+                setText(currentMax.toString())
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                setBackgroundResource(R.drawable.bg_input)
+            }
+            container.addView(editMaxLevel, 2)
+
+            dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+                text = "SAVE CONFIG"
+                setOnClickListener {
+                    val newMax = editMaxLevel.text.toString().toIntOrNull() ?: currentMax
+                    db.child("game_config").child("max_level").setValue(newMax).addOnSuccessListener {
+                        Toast.makeText(this@AdminActivity, "CONFIG UPDATED!", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+                }
+            }
+        }
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+}

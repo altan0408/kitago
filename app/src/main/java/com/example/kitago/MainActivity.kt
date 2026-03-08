@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class MainActivity : ComponentActivity() {
 
@@ -15,10 +16,9 @@ class MainActivity : ComponentActivity() {
         
         auth = FirebaseAuth.getInstance()
 
-        // Absolute check: If no valid Firebase user, show Main Menu
+        // If already logged in, check role before navigating
         if (auth.currentUser != null) {
-            startActivity(Intent(this, DashboardActivity::class.java))
-            finish()
+            checkRoleAndNavigate()
             return
         }
 
@@ -29,7 +29,6 @@ class MainActivity : ComponentActivity() {
         }
 
         findViewById<TextView>(R.id.btnChallenges).setOnClickListener {
-            // Challenges require login
             if (auth.currentUser == null) {
                 startActivity(Intent(this, LoginActivity::class.java))
             } else {
@@ -42,6 +41,34 @@ class MainActivity : ComponentActivity() {
         }
 
         findViewById<TextView>(R.id.btnExit).setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun checkRoleAndNavigate() {
+        val user = auth.currentUser ?: return
+        val db = FirebaseDatabase.getInstance().reference
+        
+        // Ensure game config is loaded
+        DataManager.fetchGlobalConfig()
+
+        db.child("admins").child(user.uid).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                // User is an ADMIN
+                val intent = Intent(this, AdminActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            } else {
+                // Regular player
+                val intent = Intent(this, DashboardActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+        }.addOnFailureListener {
+            // Fallback safety
+            startActivity(Intent(this, DashboardActivity::class.java))
             finish()
         }
     }
