@@ -18,6 +18,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.scale
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.io.ByteArrayOutputStream
@@ -75,7 +76,8 @@ class ProfileActivity : ComponentActivity() {
             findViewById<ImageButton>(R.id.btnAddFriend).visibility = View.GONE
             findViewById<LinearLayout>(R.id.requestsLayout).visibility = View.GONE
             findViewById<ImageView>(R.id.ivCameraIcon).visibility = View.GONE
-            
+            findViewById<LinearLayout>(R.id.accountSection).visibility = View.GONE
+
             val btnUnfriend = findViewById<TextView>(R.id.btnUnfriend)
             btnUnfriend.visibility = View.VISIBLE
             btnUnfriend.setOnClickListener { showUnfriendDialog() }
@@ -88,6 +90,8 @@ class ProfileActivity : ComponentActivity() {
             findViewById<ImageButton>(R.id.btnAddFriend).setOnClickListener { showAddFriendDialog() }
             findViewById<TextView>(R.id.btnSignOut).setOnClickListener { showSignOutDialog() }
             findViewById<TextView>(R.id.btnUnfriend).visibility = View.GONE
+            findViewById<TextView>(R.id.btnChangeEmail).setOnClickListener { showChangeEmailDialog() }
+            findViewById<TextView>(R.id.btnChangePassword).setOnClickListener { showChangePasswordDialog() }
         }
     }
 
@@ -400,6 +404,137 @@ class ProfileActivity : ComponentActivity() {
         } catch (_: Exception) {
             Toast.makeText(this, "FAILED TO PROCESS IMAGE!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showChangeEmailDialog() {
+        val user = auth.currentUser ?: return
+        // Google users can't change email via password re-auth
+        if (user.providerData.any { it.providerId == "google.com" } && user.providerData.none { it.providerId == "password" }) {
+            Toast.makeText(this, "GOOGLE ACCOUNTS MANAGE EMAIL VIA GOOGLE!", Toast.LENGTH_LONG).show()
+            return
+        }
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "CHANGE EMAIL"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER CURRENT PASSWORD\nAND NEW EMAIL:"
+
+        val inputPassword = EditText(this).apply {
+            hint = "CURRENT PASSWORD"; inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 10f; setPadding(40, 40, 40, 40)
+            setBackgroundResource(R.drawable.bg_input)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
+        }
+        val inputEmail = EditText(this).apply {
+            hint = "NEW EMAIL"; inputType = android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 10f; setPadding(40, 40, 40, 40)
+            setBackgroundResource(R.drawable.bg_input)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
+        }
+        val container = dialogView as LinearLayout
+        container.addView(inputPassword, 2)
+        container.addView(inputEmail, 3)
+
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "UPDATE"
+            setOnClickListener {
+                val pass = inputPassword.text.toString().trim()
+                val newEmail = inputEmail.text.toString().trim()
+                if (pass.isEmpty() || newEmail.isEmpty()) { Toast.makeText(this@ProfileActivity, "FILL ALL FIELDS!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) { Toast.makeText(this@ProfileActivity, "INVALID EMAIL!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+
+                val credential = EmailAuthProvider.getCredential(user.email!!, pass)
+                user.reauthenticate(credential).addOnSuccessListener {
+                    @Suppress("DEPRECATION")
+                    user.verifyBeforeUpdateEmail(newEmail).addOnSuccessListener {
+                        userRef.child("email").setValue(newEmail)
+                        Toast.makeText(this@ProfileActivity, "VERIFICATION SENT TO NEW EMAIL!", Toast.LENGTH_LONG).show()
+                        dialog.dismiss()
+                    }.addOnFailureListener { e -> Toast.makeText(this@ProfileActivity, "FAILED: ${e.message}", Toast.LENGTH_LONG).show() }
+                }.addOnFailureListener { Toast.makeText(this@ProfileActivity, "WRONG PASSWORD!", Toast.LENGTH_SHORT).show() }
+            }
+        }
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"; typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+            textSize = 12f; gravity = android.view.Gravity.CENTER; setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted)); setOnClickListener { dialog.dismiss() }
+        }
+        container.addView(btnCancel)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun showChangePasswordDialog() {
+        val user = auth.currentUser ?: return
+        if (user.providerData.any { it.providerId == "google.com" } && user.providerData.none { it.providerId == "password" }) {
+            Toast.makeText(this, "GOOGLE ACCOUNTS MANAGE PASSWORD VIA GOOGLE!", Toast.LENGTH_LONG).show()
+            return
+        }
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "CHANGE PASSWORD"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ENTER CURRENT AND\nNEW PASSWORD:"
+
+        val inputCurrent = EditText(this).apply {
+            hint = "CURRENT PASSWORD"; inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 10f; setPadding(40, 40, 40, 40)
+            setBackgroundResource(R.drawable.bg_input)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
+        }
+        val inputNew = EditText(this).apply {
+            hint = "NEW PASSWORD"; inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 10f; setPadding(40, 40, 40, 40)
+            setBackgroundResource(R.drawable.bg_input)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
+        }
+        val tvStrength = TextView(this).apply {
+            typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p); textSize = 7f
+            visibility = View.GONE
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, 16) }
+        }
+        inputNew.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val p = s?.toString() ?: ""
+                if (p.isEmpty()) { tvStrength.visibility = View.GONE; return }
+                val r = PasswordValidator.validate(p)
+                tvStrength.visibility = View.VISIBLE
+                tvStrength.text = r.strength.label
+                tvStrength.setTextColor(r.strength.color)
+            }
+        })
+
+        val container = dialogView as LinearLayout
+        container.addView(inputCurrent, 2)
+        container.addView(inputNew, 3)
+        container.addView(tvStrength, 4)
+
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "UPDATE"
+            setOnClickListener {
+                val currentPass = inputCurrent.text.toString().trim()
+                val newPass = inputNew.text.toString().trim()
+                if (currentPass.isEmpty() || newPass.isEmpty()) { Toast.makeText(this@ProfileActivity, "FILL ALL FIELDS!", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+                val result = PasswordValidator.validate(newPass)
+                if (!result.isValid) { Toast.makeText(this@ProfileActivity, "NEEDS: ${result.errors.joinToString(", ")}", Toast.LENGTH_LONG).show(); return@setOnClickListener }
+
+                val credential = EmailAuthProvider.getCredential(user.email!!, currentPass)
+                user.reauthenticate(credential).addOnSuccessListener {
+                    user.updatePassword(newPass).addOnSuccessListener {
+                        Toast.makeText(this@ProfileActivity, "PASSWORD UPDATED!", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }.addOnFailureListener { e -> Toast.makeText(this@ProfileActivity, "FAILED: ${e.message}", Toast.LENGTH_LONG).show() }
+                }.addOnFailureListener { Toast.makeText(this@ProfileActivity, "WRONG CURRENT PASSWORD!", Toast.LENGTH_SHORT).show() }
+            }
+        }
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"; typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
+            textSize = 12f; gravity = android.view.Gravity.CENTER; setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted)); setOnClickListener { dialog.dismiss() }
+        }
+        container.addView(btnCancel)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
     }
 
     private fun showSignOutDialog() {

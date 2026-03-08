@@ -43,6 +43,24 @@ class DashboardActivity : ComponentActivity() {
         setupUI()
         observeUserData()
         setupNavigation()
+        checkAdminAccess()
+    }
+
+    private fun checkAdminAccess() {
+        val uid = firebaseAuth.currentUser?.uid ?: return
+        firebaseDatabase.reference.child("admins").child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    // User is an admin — show admin button
+                    val btnAdmin = findViewById<ImageButton>(R.id.btnAdminPanel)
+                    btnAdmin.visibility = android.view.View.VISIBLE
+                    btnAdmin.setOnClickListener {
+                        startActivity(Intent(this@DashboardActivity, AdminActivity::class.java))
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
     private fun ensureUsernameIsIndexed() {
@@ -99,6 +117,9 @@ class DashboardActivity : ComponentActivity() {
         }
         findViewById<LinearLayout>(R.id.goalPreviewItem).setOnClickListener {
             startActivity(Intent(this, GoalsActivity::class.java))
+        }
+        findViewById<ImageButton>(R.id.btnSettings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
     }
 

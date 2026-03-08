@@ -3,7 +3,7 @@
     "users": {
       "$uid": {
         ".read": "auth != null",
-        ".write": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && (auth.uid == $uid || root.child('admins').child(auth.uid).exists())",
 
         "username": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30" },
         "email": { ".validate": "newData.isString()" },
@@ -115,6 +115,15 @@
         "$senderId": {
           ".validate": "newData.isString()"
         }
+      }
+    },
+
+    "admins": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
+      "$uid": {
+        ".write": "auth != null && root.child('admins').child(auth.uid).child('role').val() == 'super_admin'",
+        "role": { ".validate": "newData.isString() && (newData.val() == 'admin' || newData.val() == 'super_admin')" },
+        "email": { ".validate": "newData.isString()" }
       }
     }
   }

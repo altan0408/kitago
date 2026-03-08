@@ -99,6 +99,28 @@
             android:inputType="textPassword"
             android:autofillHints="password" />
 
+        <!-- PASSWORD STRENGTH -->
+        <TextView
+            android:id="@+id/tvPasswordStrength"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/press_start_2p"
+            android:textSize="7sp"
+            android:text=""
+            android:visibility="gone"
+            android:layout_marginBottom="8dp"
+            tools:ignore="SmallSp" />
+
+        <ProgressBar
+            android:id="@+id/passwordStrengthBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="4"
+            android:progress="0"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp" />
+
         <!-- CONFIRM PASSWORD -->
         <EditText
             android:id="@+id/etConfirmPassword"

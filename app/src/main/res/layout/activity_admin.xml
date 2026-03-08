@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/bg_cave"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
+
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_media_previous"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvAdminTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/press_start_2p"
+        android:text="🛡️ ADMIN PANEL"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:shadowColor="#000000"
+        android:shadowDx="3"
+        android:shadowDy="3"
+        android:shadowRadius="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvAdminRole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/press_start_2p"
+        android:text="ADMIN"
+        android:textColor="@color/gold_light"
+        android:alpha="0.8"
+        android:textSize="8sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAdminTitle"
+        tools:ignore="SmallSp" />
+
+    <!-- MANAGE ADMINS BUTTON (super_admin only) -->
+    <TextView
+        android:id="@+id/btnManageAdmins"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_button_gold"
+        android:fontFamily="@font/press_start_2p"
+        android:gravity="center"
+        android:paddingHorizontal="16dp"
+        android:text="MANAGE ADMINS"
+        android:textColor="#000000"
+        android:textSize="8sp"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAdminRole"
+        tools:ignore="SmallSp" />
+
+    <!-- USER COUNT -->
+    <TextView
+        android:id="@+id/tvUserCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="@font/press_start_2p"
+        android:text="USERS: 0"
+        android:textColor="@color/text_muted"
+        android:textSize="8sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnManageAdmins"
+        tools:ignore="SmallSp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="20dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvUserCount">
+
+        <LinearLayout
+            android:id="@+id/usersContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp" />
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
