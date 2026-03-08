@@ -1,6 +1,5 @@
 package com.example.kitago
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -9,11 +8,11 @@ import android.view.View
 import android.widget.*
 import androidx.activity.ComponentActivity
 import androidx.core.content.res.ResourcesCompat
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.util.*
 
-@SuppressLint("SetTextI18n")
 class DashboardActivity : ComponentActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
@@ -36,31 +35,27 @@ class DashboardActivity : ComponentActivity() {
 
         userRef = firebaseDatabase.reference.child("users").child(currentUser.uid)
 
-        // Self-heal: ensure username is indexed for friend searches
         ensureUsernameIsIndexed()
-        
         checkAndPerformMonthlyReset()
         setupUI()
         observeUserData()
         setupNavigation()
-        checkAdminAccess()
+        checkAdminStatus()
     }
 
-    private fun checkAdminAccess() {
+    private fun checkAdminStatus() {
         val uid = firebaseAuth.currentUser?.uid ?: return
-        firebaseDatabase.reference.child("admins").child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    // User is an admin — show admin button
-                    val btnAdmin = findViewById<ImageButton>(R.id.btnAdminPanel)
-                    btnAdmin.visibility = android.view.View.VISIBLE
-                    btnAdmin.setOnClickListener {
-                        startActivity(Intent(this@DashboardActivity, AdminActivity::class.java))
-                    }
+        firebaseDatabase.reference.child("admins").child(uid).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                // Add a small floating admin button or a badge next to username
+                val tvUsername = findViewById<TextView>(R.id.tvUsername)
+                tvUsername.text = "🛡️ " + tvUsername.text
+                tvUsername.setOnClickListener {
+                    startActivity(Intent(this, AdminActivity::class.java))
                 }
+                Toast.makeText(this, "ADMIN ACCESS GRANTED", Toast.LENGTH_SHORT).show()
             }
-            override fun onCancelled(error: DatabaseError) {}
-        })
+        }
     }
 
     private fun ensureUsernameIsIndexed() {
@@ -81,33 +76,18 @@ class DashboardActivity : ComponentActivity() {
         userRef.child("lastResetMonth").get().addOnSuccessListener { snapshot ->
             val lastReset = snapshot.getValue(String::class.java)
             if (lastReset != null && lastReset != currentMonthYear) {
-                // NEW MONTH: Reset balance and totals but KEEP goals, friends, badges, level, XP
                 val updates = hashMapOf<String, Any?>(
                     "balance" to 0.0,
                     "expense_totals" to null,
                     "income_totals" to null,
                     "lastResetMonth" to currentMonthYear
                 )
-                userRef.updateChildren(updates).addOnSuccessListener {
-                    showMonthlyResetDialog()
-                }
+                userRef.updateChildren(updates)
+                Toast.makeText(this, "NEW MONTH! VAULT RESET.", Toast.LENGTH_LONG).show()
             } else if (lastReset == null) {
                 userRef.child("lastResetMonth").setValue(currentMonthYear)
             }
         }
-    }
-
-    private fun showMonthlyResetDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
-        val dialog = AlertDialog.Builder(this).setView(dialogView).setCancelable(false).create()
-        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "🗓️ NEW MONTH!"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text =
-            "YOUR VAULT BALANCE AND\nMONTHLY TRANSACTIONS\nHAVE BEEN RESET.\n\n" +
-            "YOUR QUESTS, XP, LEVEL,\nBADGES & FRIENDS\nARE STILL SAFE!"
-        dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "LET'S GO!"
-        dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener { dialog.dismiss() }
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.show()
     }
 
     private fun setupUI() {
@@ -118,16 +98,9 @@ class DashboardActivity : ComponentActivity() {
         findViewById<LinearLayout>(R.id.goalPreviewItem).setOnClickListener {
             startActivity(Intent(this, GoalsActivity::class.java))
         }
-        findViewById<ImageButton>(R.id.btnSettings).setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
     }
 
     private fun observeUserData() {
-        // Show loading state initially
-        findViewById<TextView>(R.id.tvUsername).text = "LOADING..."
-        findViewById<TextView>(R.id.tvBalance).text = "---"
-
         userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!snapshot.exists()) return
@@ -136,20 +109,18 @@ class DashboardActivity : ComponentActivity() {
                 val balance = snapshot.child("balance").getValue(Double::class.java) ?: 0.0
                 val profilePicUrl = snapshot.child("profilePic").getValue(String::class.java)
 
-                findViewById<TextView>(R.id.tvUsername).text = username.uppercase()
-                findViewById<TextView>(R.id.tvBalance).text = String.format(Locale.getDefault(), "₱%.2f", balance)
+                val tvUser = findViewById<TextView>(R.id.tvUsername)
+                // Keep the shield if it was added by checkAdminStatus
+                if (tvUser.text.startsWith("🛡️")) {
+                    tvUser.text = "🛡️ " + username.uppercase()
+                } else {
+                    tvUser.text = username.uppercase()
+                }
+                
+                findViewById<TextView>(R.id.tvBalance).text = String.format("₱%.2f", balance)
+                
+                ImageUtils.loadProfileImage(this@DashboardActivity, profilePicUrl, findViewById(R.id.ivAvatar))
 
-                loadProfileImage(profilePicUrl, findViewById(R.id.ivAvatar))
-
-                // XP Bar
-                val level = snapshot.child("level").getValue(Int::class.java) ?: 1
-                val xp = snapshot.child("xp").getValue(Int::class.java) ?: 0
-                val xpNeeded = DataManager.getXpNeededForLevel(level)
-                val xpBar = findViewById<ProgressBar>(R.id.xpProgressBar)
-                xpBar.max = xpNeeded
-                xpBar.progress = xp
-
-                // Monthly Summary
                 val expenses = snapshot.child("expense_totals")
                 var totalExpense = 0.0
                 for (child in expenses.children) { totalExpense += child.getValue(Double::class.java) ?: 0.0 }
@@ -161,11 +132,9 @@ class DashboardActivity : ComponentActivity() {
                 findViewById<TextView>(R.id.tvTotalIncome).text = "₱${totalIncome.toInt()}"
                 findViewById<TextView>(R.id.tvTotalExpense).text = "₱${totalExpense.toInt()}"
 
-                // Total Quest Savings & Preview
                 val goalIds = snapshot.child("goals").children.mapNotNull { it.key }
                 fetchGoalsData(goalIds)
 
-                // HP Bar
                 val hpBar = findViewById<ProgressBar>(R.id.budgetHpBar)
                 val hpLabel = findViewById<TextView>(R.id.tvBudgetHpLabel)
                 if (balance <= 0) {
@@ -204,7 +173,7 @@ class DashboardActivity : ComponentActivity() {
                     
                     loadedCount++
                     if (loadedCount == goalIds.size) {
-                        findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format(Locale.getDefault(), "₱%.2f", totalQuestSaved)
+                        findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format("₱%.2f", totalQuestSaved)
                         lastIncompleteGoal?.let { updateGoalPreview(it) } ?: run {
                             findViewById<TextView>(R.id.tvPreviewGoalName).text = "NO ACTIVE QUESTS"
                             findViewById<ProgressBar>(R.id.previewGoalProgress).progress = 0
@@ -224,10 +193,6 @@ class DashboardActivity : ComponentActivity() {
         findViewById<ProgressBar>(R.id.previewGoalProgress).progress = progress
     }
 
-    private fun loadProfileImage(data: String?, imageView: ImageView) {
-        ImageUtils.loadProfileImage(this, data, imageView)
-    }
-
     private fun showAddBalanceDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
@@ -239,55 +204,21 @@ class DashboardActivity : ComponentActivity() {
         }
         (dialogView as LinearLayout).addView(input, 2)
         dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "DEPOSIT"
-        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ADD GOLD TO YOUR VAULT:"
-        dialogView.findViewById<TextView>(R.id.btnDialogOk).text = "DEPOSIT"
         dialogView.findViewById<TextView>(R.id.btnDialogOk).setOnClickListener {
-            val amountStr = input.text.toString().trim()
-            if (amountStr.isEmpty()) {
-                Toast.makeText(this, "ENTER AN AMOUNT!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val amount = amountStr.toDoubleOrNull()
-            if (amount == null || amount <= 0) {
-                Toast.makeText(this, "ENTER A VALID AMOUNT!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (amount > 1000000) {
-                Toast.makeText(this, "AMOUNT TOO LARGE!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            DataManager.syncUpdateBalance(amount, true) {
-                runOnUiThread { dialog.dismiss() }
+            val amountStr = input.text.toString()
+            if (amountStr.isNotEmpty()) {
+                DataManager.syncUpdateBalance(amountStr.toDouble(), true) { dialog.dismiss() }
             }
         }
-        // Cancel button
-        val btnCancel = TextView(this).apply {
-            text = "CANCEL"
-            typeface = ResourcesCompat.getFont(this@DashboardActivity, R.font.press_start_2p)
-            textSize = 12f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 30, 0, 30)
-            setTextColor(getColor(R.color.text_muted))
-            setOnClickListener { dialog.dismiss() }
-        }
-        dialogView.addView(btnCancel)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
 
     private fun setupNavigation() {
-        findViewById<ImageButton>(R.id.navHome).setOnClickListener { /* Already on dashboard */ }
-        findViewById<ImageButton>(R.id.navGoals).setOnClickListener {
-            startActivity(Intent(this, GoalsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-        }
-        findViewById<ImageButton>(R.id.navAdd).setOnClickListener {
-            startActivity(Intent(this, AddTransactionActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-        }
-        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener {
-            startActivity(Intent(this, ChallengesActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-        }
-        findViewById<ImageButton>(R.id.navProfile).setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
-        }
+        findViewById<ImageButton>(R.id.navHome).setOnClickListener { }
+        findViewById<ImageButton>(R.id.navGoals).setOnClickListener { startActivity(Intent(this, GoalsActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navAdd).setOnClickListener { startActivity(Intent(this, AddTransactionActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navChallenges).setOnClickListener { startActivity(Intent(this, ChallengesActivity::class.java)) }
+        findViewById<ImageButton>(R.id.navProfile).setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
     }
 }
