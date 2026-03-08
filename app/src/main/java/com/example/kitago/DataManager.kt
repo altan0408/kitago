@@ -36,10 +36,37 @@ object DataManager {
         })
     }
 
+<<<<<<< Updated upstream
     @Suppress("UNUSED_PARAMETER")
     fun syncAddTransaction(amount: Double, category: String, note: String, isIncome: Boolean, onComplete: (Boolean) -> Unit) {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val userRef = FirebaseDatabase.getInstance().reference.child("users").child(currentUser.uid)
+=======
+    fun syncAddTransaction(amount: Double, category: String, note: String, isIncome: Boolean, onComplete: (Boolean) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+        val userRef = FirebaseDatabase.getInstance().reference.child("users").child(currentUser.uid)
+
+        userRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val balance = currentData.child("balance").getValue(Double::class.java) ?: 0.0
+                currentData.child("balance").value = if (isIncome) balance + amount else balance - amount
+
+                val path = if (isIncome) "income_totals" else "expense_totals"
+                val catRef = currentData.child(path).child(category)
+                catRef.value = (catRef.getValue(Double::class.java) ?: 0.0) + amount
+
+                if (isIncome) addXp(currentData, XP_PER_DEPOSIT)
+                return Transaction.success(currentData)
+            }
+            override fun onComplete(e: DatabaseError?, c: Boolean, s: DataSnapshot?) { onComplete(c) }
+        })
+    }
+
+    fun handleContribution(amount: Double, goalId: String, goal: Goal, onComplete: (Boolean) -> Unit) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: "User"
+        val db = FirebaseDatabase.getInstance().reference
+>>>>>>> Stashed changes
 
         userRef.runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
