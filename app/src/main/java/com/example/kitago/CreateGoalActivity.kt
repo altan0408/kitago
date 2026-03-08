@@ -61,10 +61,12 @@ class CreateGoalActivity : ComponentActivity() {
 
             if (name.isNotEmpty() && targetStr.isNotEmpty() && selectedDeadline.isNotEmpty()) {
                 val target = targetStr.toDoubleOrNull() ?: 0.0
-                if (target > 0) {
-                    saveGoalToFirebase(name, target)
-                } else {
+                if (target <= 0) {
                     Toast.makeText(this, "TARGET MUST BE GREATER THAN 0!", Toast.LENGTH_SHORT).show()
+                } else if (target > 1000000) {
+                    Toast.makeText(this, "TARGET TOO LARGE! (MAX ₱1,000,000)", Toast.LENGTH_SHORT).show()
+                } else {
+                    saveGoalToFirebase(name, target)
                 }
             } else {
                 Toast.makeText(this, "COMPLETE ALL QUEST DETAILS!", Toast.LENGTH_SHORT).show()

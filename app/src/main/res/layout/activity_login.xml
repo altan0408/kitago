@@ -111,9 +111,26 @@
             android:textSize="12sp"
             android:textColor="@color/text_dark"
             android:fontFamily="@font/press_start_2p"
-            android:layout_marginBottom="28dp"
+            android:layout_marginBottom="8dp"
             android:inputType="textPassword"
             android:importantForAutofill="no" />
+
+        <!-- FORGOT PASSWORD -->
+        <TextView
+            android:id="@+id/tvForgotPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FORGOT PASSWORD?"
+            android:textSize="8sp"
+            android:textColor="@color/link_teal"
+            android:fontFamily="@font/press_start_2p"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="end"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:padding="4dp"
+            tools:ignore="SmallSp" />
 
         <!-- SIGN IN BUTTON -->
         <TextView

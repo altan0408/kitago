@@ -44,6 +44,12 @@ object DataManager {
         userRef.runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
                 val balance = currentData.child("balance").getValue(Double::class.java) ?: 0.0
+
+                // Prevent expenses exceeding available balance
+                if (!isIncome && balance < amount) {
+                    return Transaction.abort()
+                }
+
                 currentData.child("balance").value = if (isIncome) balance + amount else balance - amount
 
                 val totalNode = if (isIncome) "income_totals" else "expense_totals"
@@ -284,5 +290,53 @@ object DataManager {
         }
         userData.child("xp").value = xp
         userData.child("level").value = level
+
+        // Check and award badges
+        checkBadges(userData, level)
+    }
+
+    /**
+     * Badge definitions and automatic awarding logic.
+     * Badges are awarded based on level, wins, streak, and totalSavedGold.
+     */
+    private fun checkBadges(userData: MutableData, level: Int) {
+        val wins = userData.child("wins").getValue(Int::class.java) ?: 0
+        val streak = userData.child("streak").getValue(Int::class.java) ?: 0
+        val totalSaved = userData.child("totalSavedGold").getValue(Double::class.java) ?: 0.0
+        val badges = userData.child("badges")
+
+        // Level-based badges
+        if (level >= 5 && badges.child("NOVICE_SAVER").value == null)
+            badges.child("NOVICE_SAVER").value = "NOVICE SAVER"
+        if (level >= 10 && badges.child("SKILLED_SAVER").value == null)
+            badges.child("SKILLED_SAVER").value = "SKILLED SAVER"
+        if (level >= 25 && badges.child("MASTER_SAVER").value == null)
+            badges.child("MASTER_SAVER").value = "MASTER SAVER"
+        if (level >= 50 && badges.child("LEGENDARY").value == null)
+            badges.child("LEGENDARY").value = "LEGENDARY"
+
+        // Win-based badges
+        if (wins >= 1 && badges.child("FIRST_QUEST").value == null)
+            badges.child("FIRST_QUEST").value = "FIRST QUEST"
+        if (wins >= 5 && badges.child("QUEST_HUNTER").value == null)
+            badges.child("QUEST_HUNTER").value = "QUEST HUNTER"
+        if (wins >= 10 && badges.child("QUEST_MASTER").value == null)
+            badges.child("QUEST_MASTER").value = "QUEST MASTER"
+
+        // Streak-based badges
+        if (streak >= 3 && badges.child("HOT_STREAK").value == null)
+            badges.child("HOT_STREAK").value = "HOT STREAK"
+        if (streak >= 7 && badges.child("WEEKLY_WARRIOR").value == null)
+            badges.child("WEEKLY_WARRIOR").value = "WEEKLY WARRIOR"
+        if (streak >= 30 && badges.child("MONTHLY_LEGEND").value == null)
+            badges.child("MONTHLY_LEGEND").value = "MONTHLY LEGEND"
+
+        // Savings-based badges
+        if (totalSaved >= 1000 && badges.child("GOLD_HOARDER").value == null)
+            badges.child("GOLD_HOARDER").value = "GOLD HOARDER"
+        if (totalSaved >= 5000 && badges.child("TREASURE_HUNTER").value == null)
+            badges.child("TREASURE_HUNTER").value = "TREASURE HUNTER"
+        if (totalSaved >= 10000 && badges.child("DRAGON_VAULT").value == null)
+            badges.child("DRAGON_VAULT").value = "DRAGON VAULT"
     }
 }
