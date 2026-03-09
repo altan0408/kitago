@@ -5,6 +5,11 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -14,6 +19,7 @@ import android.view.View
 import android.widget.*
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.scale
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -22,6 +28,7 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.io.ByteArrayOutputStream
+import java.io.File
 
 @SuppressLint("SetTextI18n")
 @Suppress("DEPRECATION")
@@ -33,11 +40,28 @@ class ProfileActivity : ComponentActivity() {
     private var currentUsername: String? = null
     private var isViewerMode = false
     private var targetUserId: String? = null
+    private var cropOutputUri: Uri? = null
 
+    // Step 2: After crop completes, save the cropped image
+    private val cropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val uri = cropOutputUri
+            if (uri != null) {
+                saveCroppedImage(uri)
+            }
+        } else {
+            // Crop was cancelled
+            Toast.makeText(this, "CROP CANCELLED", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Step 1: After image is picked, launch the crop intent
     private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val imageUri = result.data?.data
-            if (imageUri != null) { processAndSaveImage(imageUri) }
+            if (imageUri != null) {
+                launchCropIntent(imageUri)
+            }
         }
     }
 
@@ -387,23 +411,87 @@ class ProfileActivity : ComponentActivity() {
         dialog.show()
     }
 
-    private fun processAndSaveImage(uri: Uri) {
+    private fun launchCropIntent(sourceUri: Uri) {
         try {
-            val inputStream = contentResolver.openInputStream(uri)
+            val cropFile = File(cacheDir, "crop_output_${System.currentTimeMillis()}.jpg")
+            cropOutputUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", cropFile)
+
+            val cropIntent = Intent("com.android.camera.action.CROP").apply {
+                setDataAndType(sourceUri, "image/*")
+                putExtra("crop", "true")
+                putExtra("aspectX", 1)
+                putExtra("aspectY", 1)
+                putExtra("outputX", 400)
+                putExtra("outputY", 400)
+                putExtra("return-data", false)
+                putExtra(MediaStore.EXTRA_OUTPUT, cropOutputUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            }
+
+            // Check if any app can handle the crop intent
+            if (cropIntent.resolveActivity(packageManager) != null) {
+                // Grant URI permissions to all apps that can handle crop
+                val resInfoList = packageManager.queryIntentActivities(cropIntent, 0)
+                for (resolveInfo in resInfoList) {
+                    val pName = resolveInfo.activityInfo.packageName
+                    grantUriPermission(pName, cropOutputUri!!, Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    grantUriPermission(pName, sourceUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                cropLauncher.launch(cropIntent)
+            } else {
+                // Fallback: crop manually in code if no crop app available
+                fallbackCropAndSave(sourceUri)
+            }
+        } catch (e: Exception) {
+            // Fallback on any error
+            fallbackCropAndSave(sourceUri)
+        }
+    }
+
+    private fun fallbackCropAndSave(uri: Uri) {
+        try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return
             val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
             if (bitmap == null) {
                 Toast.makeText(this, "FAILED TO LOAD IMAGE!", Toast.LENGTH_SHORT).show()
                 return
             }
-            val scaled = bitmap.scale(200, 200, true)
-            val out = ByteArrayOutputStream()
-            scaled.compress(Bitmap.CompressFormat.JPEG, 70, out)
-            userRef.child("profilePic").setValue(Base64.encodeToString(out.toByteArray(), Base64.DEFAULT))
-                .addOnSuccessListener { Toast.makeText(this, "AVATAR UPDATED!", Toast.LENGTH_SHORT).show() }
-                .addOnFailureListener { Toast.makeText(this, "UPLOAD FAILED!", Toast.LENGTH_SHORT).show() }
-        } catch (_: Exception) {
+            // Center-crop to square
+            val size = minOf(bitmap.width, bitmap.height)
+            val x = (bitmap.width - size) / 2
+            val y = (bitmap.height - size) / 2
+            val cropped = Bitmap.createBitmap(bitmap, x, y, size, size)
+            val scaled = cropped.scale(400, 400, true)
+            saveAndUploadBitmap(scaled)
+        } catch (e: Exception) {
             Toast.makeText(this, "FAILED TO PROCESS IMAGE!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun saveCroppedImage(uri: Uri) {
+        try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+            if (bitmap == null) {
+                Toast.makeText(this, "FAILED TO LOAD IMAGE!", Toast.LENGTH_SHORT).show()
+                return
+            }
+            val scaled = bitmap.scale(400, 400, true)
+            saveAndUploadBitmap(scaled)
+        } catch (e: Exception) {
+            Toast.makeText(this, "FAILED TO PROCESS IMAGE!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun saveAndUploadBitmap(bitmap: Bitmap) {
+        val out = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
+        val base64 = Base64.encodeToString(out.toByteArray(), Base64.DEFAULT)
+        userRef.child("profilePic").setValue(base64)
+            .addOnSuccessListener { Toast.makeText(this, "AVATAR UPDATED!", Toast.LENGTH_SHORT).show() }
+            .addOnFailureListener { Toast.makeText(this, "UPLOAD FAILED!", Toast.LENGTH_SHORT).show() }
     }
 
     private fun showChangeEmailDialog() {

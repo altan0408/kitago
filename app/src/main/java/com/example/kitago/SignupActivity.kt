@@ -6,9 +6,9 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
+import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -59,7 +59,6 @@ class SignupActivity : ComponentActivity() {
         val etPassword = findViewById<EditText>(R.id.etPassword)
         val etConfirmPassword = findViewById<EditText>(R.id.etConfirmPassword)
         val btnSignUp = findViewById<TextView>(R.id.btnSignUp)
-        val ivGoogle = findViewById<ImageView>(R.id.ivGoogleSignup)
 
         // BACK BUTTON
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
@@ -95,7 +94,7 @@ class SignupActivity : ComponentActivity() {
         }
 
         // GOOGLE SIGN UP
-        ivGoogle.setOnClickListener {
+        findViewById<View>(R.id.ivGoogleSignup).setOnClickListener {
             googleSignInClient.signOut().addOnCompleteListener {
                 val signInIntent = googleSignInClient.signInIntent
                 googleSignInLauncher.launch(signInIntent)
@@ -168,7 +167,9 @@ class SignupActivity : ComponentActivity() {
                             // First time login - save profile
                             saveUserToDatabase(user.uid, user.displayName ?: "Adventurer", user.email ?: "", user.photoUrl?.toString() ?: "")
                         } else {
-                            startActivity(Intent(this, DashboardActivity::class.java))
+                            val intent = Intent(this, DashboardActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
                             finish()
                         }
                     }

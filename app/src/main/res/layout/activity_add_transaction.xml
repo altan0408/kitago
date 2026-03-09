@@ -26,8 +26,11 @@
             android:id="@+id/btnBack"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:padding="8dp"
+            android:scaleType="centerInside"
             android:src="@android:drawable/ic_media_previous"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/bg_button_settings"
+            app:tint="@color/gold_light"
             android:contentDescription="@string/back" />
 
         <TextView

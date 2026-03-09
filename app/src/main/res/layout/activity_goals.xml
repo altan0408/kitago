@@ -66,10 +66,11 @@
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="60dp"
         android:background="@drawable/bg_button_gold"
         android:orientation="horizontal"
         android:gravity="center"
+        android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageButton
@@ -78,7 +79,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@android:drawable/ic_menu_view"
+            android:scaleType="centerInside"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="14dp"
             android:contentDescription="@string/home" />
 
         <ImageButton
@@ -87,7 +90,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@android:drawable/ic_menu_compass"
+            android:scaleType="centerInside"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="14dp"
             android:contentDescription="@string/goals" />
 
         <ImageButton
@@ -96,7 +101,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@android:drawable/ic_input_add"
+            android:scaleType="centerInside"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="14dp"
             android:contentDescription="@string/add" />
 
         <ImageButton
@@ -105,7 +112,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@android:drawable/btn_star_big_on"
+            android:scaleType="centerInside"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="14dp"
             android:contentDescription="@string/challenges" />
 
         <ImageButton
@@ -114,7 +123,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@android:drawable/ic_menu_myplaces"
+            android:scaleType="centerInside"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="14dp"
             android:contentDescription="@string/profile" />
 
     </LinearLayout>

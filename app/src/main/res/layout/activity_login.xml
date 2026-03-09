@@ -20,9 +20,12 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_margin="16dp"
+        android:padding="8dp"
+        android:scaleType="centerInside"
         android:src="@android:drawable/ic_media_previous"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_button_settings"
         android:contentDescription="@string/back"
+        app:tint="@color/gold_light"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -166,22 +169,35 @@
             android:layout_marginBottom="16dp"
             tools:ignore="SmallSp" />
 
-        <!-- SOCIAL ICONS -->
+        <!-- GOOGLE SIGN IN BUTTON -->
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/ivGoogle"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
             android:orientation="horizontal"
-            android:layout_marginBottom="32dp">
+            android:gravity="center"
+            android:background="@drawable/bg_google_button"
+            android:layout_marginBottom="32dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <ImageView
-                android:id="@+id/ivGoogle"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:src="@android:drawable/ic_menu_search"
-                android:padding="10dp"
-                android:background="@drawable/bg_stone_tablet"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_google_logo"
+                android:scaleType="centerInside"
                 android:contentDescription="@string/google"
-                app:tint="#EA4335" />
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GOOGLE"
+                android:textSize="10sp"
+                android:textColor="@color/text_dark"
+                android:fontFamily="@font/press_start_2p"
+                tools:ignore="SmallSp" />
         </LinearLayout>
 
         <!-- REGISTER LINK -->

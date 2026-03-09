@@ -20,9 +20,12 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_margin="16dp"
+        android:padding="8dp"
+        android:scaleType="centerInside"
         android:src="@android:drawable/ic_media_previous"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_button_settings"
         android:contentDescription="@string/back"
+        app:tint="@color/gold_light"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

@@ -17,7 +17,9 @@ class MainActivity : ComponentActivity() {
 
         // Absolute check: If no valid Firebase user, show Main Menu
         if (auth.currentUser != null) {
-            startActivity(Intent(this, DashboardActivity::class.java))
+            val intent = Intent(this, DashboardActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             finish()
             return
         }

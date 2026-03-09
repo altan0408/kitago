@@ -8,7 +8,6 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -55,7 +54,7 @@ class LoginActivity : ComponentActivity() {
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
         val btnSignIn = findViewById<TextView>(R.id.btnSignIn)
-        val ivGoogle = findViewById<ImageView>(R.id.ivGoogle)
+        val ivGoogle = findViewById<LinearLayout>(R.id.ivGoogle)
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
 
