@@ -1,16 +1,21 @@
 package com.example.kitago
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
@@ -19,6 +24,7 @@ import android.view.View
 import android.widget.*
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.scale
@@ -41,6 +47,36 @@ class ProfileActivity : ComponentActivity() {
     private var isViewerMode = false
     private var targetUserId: String? = null
     private var cropOutputUri: Uri? = null
+
+    // Permission launcher for photo access
+    private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            launchImagePicker()
+        } else {
+            Toast.makeText(this, "PHOTO PERMISSION NEEDED FOR AVATAR!", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun launchImagePicker() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        imagePickerLauncher.launch(intent)
+    }
+
+    private fun checkAndRequestPhotoPermission() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+        when {
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> launchImagePicker()
+            shouldShowRequestPermissionRationale(permission) -> {
+                Toast.makeText(this, "PHOTO ACCESS NEEDED TO CHANGE AVATAR!", Toast.LENGTH_LONG).show()
+                permissionLauncher.launch(permission)
+            }
+            else -> permissionLauncher.launch(permission)
+        }
+    }
 
     // Step 2: After crop completes, save the cropped image
     private val cropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -108,8 +144,7 @@ class ProfileActivity : ComponentActivity() {
         } else {
             findViewById<ImageButton>(R.id.btnEditUsername).setOnClickListener { showEditUsernameDialog() }
             findViewById<ImageView>(R.id.ivLargeAvatar).setOnClickListener {
-                val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                imagePickerLauncher.launch(intent)
+                checkAndRequestPhotoPermission()
             }
             findViewById<ImageButton>(R.id.btnAddFriend).setOnClickListener { showAddFriendDialog() }
             findViewById<TextView>(R.id.btnSignOut).setOnClickListener { showSignOutDialog() }
@@ -315,25 +350,11 @@ class ProfileActivity : ComponentActivity() {
         val grid = findViewById<GridLayout>(R.id.badgeGrid)
         grid.removeAllViews()
 
-        if (!badgesSnapshot.hasChildren()) {
-            val emptyText = TextView(this).apply {
-                text = "NO BADGES YET"
-                typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-                textSize = 8f
-                setTextColor(getColor(R.color.text_muted))
-                gravity = android.view.Gravity.CENTER
-                setPadding(16, 32, 16, 32)
-                layoutParams = GridLayout.LayoutParams().apply {
-                    columnSpec = GridLayout.spec(0, 3)
-                    width = GridLayout.LayoutParams.MATCH_PARENT
-                }
-            }
-            grid.addView(emptyText)
-            return
-        }
+        val earnedBadgeKeys = badgesSnapshot.children.mapNotNull { it.key }.toSet()
 
-        for (badge in badgesSnapshot.children) {
-            val badgeName = badge.getValue(String::class.java) ?: badge.key ?: "BADGE"
+        for (badge in BadgeCatalog.allBadges) {
+            val isEarned = earnedBadgeKeys.contains(badge.key)
+
             val badgeView = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = android.view.Gravity.CENTER
@@ -345,24 +366,54 @@ class ProfileActivity : ComponentActivity() {
                     setMargins(4, 4, 4, 4)
                 }
                 setBackgroundResource(R.drawable.bg_panel)
+                alpha = if (isEarned) 1.0f else 0.6f
             }
+
             val icon = ImageView(this).apply {
-                layoutParams = LinearLayout.LayoutParams(64, 64).apply { setMargins(0, 8, 0, 4) }
-                setImageResource(android.R.drawable.btn_star_big_on)
+                layoutParams = LinearLayout.LayoutParams(72, 72).apply { setMargins(0, 8, 0, 4) }
+                setImageResource(badge.iconRes)
+                if (!isEarned) {
+                    val matrix = ColorMatrix()
+                    matrix.setSaturation(0f)
+                    colorFilter = ColorMatrixColorFilter(matrix)
+                }
             }
+
             val label = TextView(this).apply {
-                text = badgeName
+                text = badge.displayName
                 typeface = ResourcesCompat.getFont(this@ProfileActivity, R.font.press_start_2p)
-                textSize = 6f
-                setTextColor(getColor(R.color.text_dark))
+                textSize = 5f
+                setTextColor(if (isEarned) getColor(R.color.text_dark) else getColor(R.color.text_muted))
                 gravity = android.view.Gravity.CENTER
                 setPadding(4, 0, 4, 8)
                 maxLines = 2
             }
+
             badgeView.addView(icon)
             badgeView.addView(label)
+
+            badgeView.setOnClickListener {
+                showBadgeInfoDialog(badge, isEarned)
+            }
+
             grid.addView(badgeView)
         }
+    }
+
+    private fun showBadgeInfoDialog(badge: BadgeInfo, isEarned: Boolean) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+
+        val statusText = if (isEarned) "✅ EARNED!" else "🔒 LOCKED"
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = badge.displayName
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "${badge.description}\n\n$statusText"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "OK"
+            setOnClickListener { dialog.dismiss() }
+        }
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
     }
 
     private fun showEditUsernameDialog() {

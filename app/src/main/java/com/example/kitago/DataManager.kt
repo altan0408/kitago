@@ -267,11 +267,23 @@ object DataManager {
         val totalSaved = userData.child("totalSavedGold").getValue(Double::class.java) ?: 0.0
         val badges = userData.child("badges")
 
-        if (level >= 5 && badges.child("NOVICE_SAVER").value == null) badges.child("NOVICE_SAVER").value = "NOVICE SAVER"
-        if (level >= 10 && badges.child("SKILLED_SAVER").value == null) badges.child("SKILLED_SAVER").value = "SKILLED SAVER"
+        // Easy badges
+        if (level >= 2 && badges.child("FIRST_DEPOSIT").value == null) badges.child("FIRST_DEPOSIT").value = "FIRST DEPOSIT"
         if (wins >= 1 && badges.child("FIRST_QUEST").value == null) badges.child("FIRST_QUEST").value = "FIRST QUEST"
+        if (level >= 5 && badges.child("NOVICE_SAVER").value == null) badges.child("NOVICE_SAVER").value = "NOVICE SAVER"
+
+        // Medium badges
+        if (level >= 10 && badges.child("SKILLED_SAVER").value == null) badges.child("SKILLED_SAVER").value = "SKILLED SAVER"
         if (streak >= 3 && badges.child("HOT_STREAK").value == null) badges.child("HOT_STREAK").value = "HOT STREAK"
         if (totalSaved >= 1000 && badges.child("GOLD_HOARDER").value == null) badges.child("GOLD_HOARDER").value = "GOLD HOARDER"
+        if (wins >= 5 && badges.child("FIVE_QUESTS").value == null) badges.child("FIVE_QUESTS").value = "QUEST HUNTER"
+
+        // Hard badges
+        if (level >= 20 && badges.child("QUEST_MASTER").value == null) badges.child("QUEST_MASTER").value = "QUEST MASTER"
+        if (totalSaved >= 5000 && badges.child("DRAGON_HOARDER").value == null) badges.child("DRAGON_HOARDER").value = "DRAGON HOARDER"
+        if (level >= 40 && badges.child("LEGENDARY").value == null) badges.child("LEGENDARY").value = "LEGENDARY"
+        if (wins >= 10 && badges.child("TEN_QUESTS").value == null) badges.child("TEN_QUESTS").value = "VETERAN"
+        if (streak >= 7 && badges.child("WEEK_STREAK").value == null) badges.child("WEEK_STREAK").value = "IRON WILL"
     }
 
     fun fetchGlobalConfig() {

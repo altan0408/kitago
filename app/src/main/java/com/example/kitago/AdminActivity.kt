@@ -17,6 +17,7 @@ class AdminActivity : ComponentActivity() {
 
     private lateinit var db: DatabaseReference
     private lateinit var usersContainer: LinearLayout
+    private lateinit var adminsContainer: LinearLayout
     private var myRole: String = "admin"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,6 +26,7 @@ class AdminActivity : ComponentActivity() {
 
         db = FirebaseDatabase.getInstance().reference
         usersContainer = findViewById(R.id.usersContainer)
+        adminsContainer = findViewById(R.id.adminsContainer)
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
 
@@ -42,11 +44,16 @@ class AdminActivity : ComponentActivity() {
                 findViewById<TextView>(R.id.tvAdminRole).text = myRole.uppercase().replace("_", " ")
 
                 val btnManageAdmins = findViewById<TextView>(R.id.btnManageAdmins)
+                val tabButtons = findViewById<LinearLayout>(R.id.tabButtons)
                 if (myRole == "super_admin") {
                     btnManageAdmins.visibility = View.VISIBLE
                     btnManageAdmins.setOnClickListener { showManageAdminsDialog() }
+                    tabButtons.visibility = View.VISIBLE
+                    setupTabs()
+                    loadAdmins()
                 } else {
                     btnManageAdmins.visibility = View.GONE
+                    tabButtons.visibility = View.GONE
                 }
             }
             override fun onCancelled(error: DatabaseError) {}
@@ -107,6 +114,100 @@ class AdminActivity : ComponentActivity() {
                 Toast.makeText(this@AdminActivity, "FAILED TO LOAD USERS: ${error.message}", Toast.LENGTH_LONG).show()
             }
         })
+    }
+
+    private fun setupTabs() {
+        val tabUsers = findViewById<TextView>(R.id.tabUsers)
+        val tabAdmins = findViewById<TextView>(R.id.tabAdmins)
+
+        tabUsers.setOnClickListener {
+            tabUsers.setBackgroundResource(R.drawable.bg_button_gold)
+            tabAdmins.setBackgroundResource(R.drawable.bg_button_teal)
+            usersContainer.visibility = View.VISIBLE
+            adminsContainer.visibility = View.GONE
+            findViewById<TextView>(R.id.tvUserCount).visibility = View.VISIBLE
+        }
+        tabAdmins.setOnClickListener {
+            tabAdmins.setBackgroundResource(R.drawable.bg_button_gold)
+            tabUsers.setBackgroundResource(R.drawable.bg_button_teal)
+            usersContainer.visibility = View.GONE
+            adminsContainer.visibility = View.VISIBLE
+            findViewById<TextView>(R.id.tvUserCount).visibility = View.GONE
+        }
+    }
+
+    private fun loadAdmins() {
+        db.child("admins").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                adminsContainer.removeAllViews()
+
+                if (!snapshot.hasChildren()) {
+                    val emptyMsg = TextView(this@AdminActivity).apply {
+                        text = "NO ADMINS FOUND"
+                        typeface = ResourcesCompat.getFont(this@AdminActivity, R.font.press_start_2p)
+                        textSize = 10f
+                        setTextColor(getColor(R.color.text_muted))
+                        gravity = android.view.Gravity.CENTER
+                        setPadding(0, 60, 0, 60)
+                    }
+                    adminsContainer.addView(emptyMsg)
+                    return
+                }
+
+                for (adminSnap in snapshot.children) {
+                    val adminUid = adminSnap.key ?: continue
+                    val role = adminSnap.child("role").getValue(String::class.java) ?: "admin"
+
+                    db.child("users").child(adminUid).get().addOnSuccessListener { userSnap ->
+                        if (!userSnap.exists()) return@addOnSuccessListener
+                        val name = userSnap.child("username").getValue(String::class.java) ?: "Unknown"
+                        val email = userSnap.child("email").getValue(String::class.java) ?: "---"
+                        val pic = userSnap.child("profilePic").getValue(String::class.java)
+
+                        val view = LayoutInflater.from(this@AdminActivity).inflate(R.layout.item_admin_user, adminsContainer, false)
+                        view.findViewById<TextView>(R.id.tvUserName).text = name.uppercase()
+                        view.findViewById<TextView>(R.id.tvUserEmail).text = email
+                        view.findViewById<TextView>(R.id.tvUserLevel).text = role.uppercase().replace("_", " ")
+                        view.findViewById<TextView>(R.id.tvUserBalance).text = ""
+                        ImageUtils.loadProfileImage(this@AdminActivity, pic, view.findViewById(R.id.ivUserAvatar))
+
+                        view.setOnClickListener {
+                            if (myRole == "super_admin" && adminUid != FirebaseAuth.getInstance().currentUser?.uid) {
+                                showRemoveAdminConfirmDialog(adminUid, name)
+                            }
+                        }
+                        adminsContainer.addView(view)
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+    private fun showRemoveAdminConfirmDialog(adminUid: String, name: String) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "REMOVE ADMIN?"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "REVOKE ADMIN FROM\n${name.uppercase()}?"
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "REMOVE"
+            setBackgroundResource(R.drawable.bg_button_orange)
+            setOnClickListener {
+                db.child("admins").child(adminUid).removeValue().addOnSuccessListener {
+                    Toast.makeText(this@AdminActivity, "ADMIN REMOVED!", Toast.LENGTH_SHORT).show()
+                }
+                dialog.dismiss()
+            }
+        }
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@AdminActivity, R.font.press_start_2p)
+            textSize = 12f; gravity = android.view.Gravity.CENTER; setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted)); setOnClickListener { dialog.dismiss() }
+        }
+        (dialogView as LinearLayout).addView(btnCancel)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
     }
 
     private fun addUserRow(uid: String, name: String, email: String, level: Int, balance: Double, pic: String?, userSnap: DataSnapshot) {

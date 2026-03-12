@@ -296,32 +296,10 @@
             </RelativeLayout>
 
             <LinearLayout
-                android:id="@+id/goalPreviewItem"
+                android:id="@+id/goalPreviewContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_panel"
-                android:padding="16dp"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true">
-                <TextView
-                    android:id="@+id/tvPreviewGoalName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="NO ACTIVE QUESTS"
-                    android:textSize="8sp"
-                    android:fontFamily="@font/press_start_2p"
-                    android:textColor="@color/text_dark"
-                    tools:ignore="SmallSp" />
-                <ProgressBar
-                    android:id="@+id/previewGoalProgress"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="12dp"
-                    android:progress="0"
-                    android:progressDrawable="@drawable/bg_xp_bar"
-                    android:layout_marginTop="8dp" />
-            </LinearLayout>
+                android:orientation="vertical" />
 
         </LinearLayout>
     </ScrollView>

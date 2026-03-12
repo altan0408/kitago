@@ -107,7 +107,7 @@ class DashboardActivity : ComponentActivity() {
         findViewById<TextView>(R.id.tvViewAllGoals).setOnClickListener {
             startActivity(Intent(this, GoalsActivity::class.java))
         }
-        findViewById<LinearLayout>(R.id.goalPreviewItem).setOnClickListener {
+        findViewById<LinearLayout>(R.id.goalPreviewContainer).setOnClickListener {
             startActivity(Intent(this, GoalsActivity::class.java))
         }
         findViewById<ImageButton>(R.id.btnSettings).setOnClickListener {
@@ -166,15 +166,17 @@ class DashboardActivity : ComponentActivity() {
     }
 
     private fun fetchGoalsData(goalIds: List<String>) {
+        val container = findViewById<LinearLayout>(R.id.goalPreviewContainer)
+
         if (goalIds.isEmpty()) {
             findViewById<TextView>(R.id.tvTotalSavedGoals).text = "₱0.00"
-            findViewById<TextView>(R.id.tvPreviewGoalName).text = "NO ACTIVE QUESTS"
-            findViewById<ProgressBar>(R.id.previewGoalProgress).progress = 0
+            container.removeAllViews()
+            addEmptyQuestMessage(container)
             return
         }
 
         var totalQuestSaved = 0.0
-        var lastIncompleteGoal: Goal? = null
+        val incompleteGoals = mutableListOf<Goal>()
         var loadedCount = 0
 
         for (id in goalIds) {
@@ -183,15 +185,22 @@ class DashboardActivity : ComponentActivity() {
                     val goal = snapshot.getValue(Goal::class.java)
                     if (goal != null) {
                         totalQuestSaved += goal.savedGold
-                        if (goal.savedGold < goal.targetGold) lastIncompleteGoal = goal
+                        if (goal.savedGold < goal.targetGold) incompleteGoals.add(goal)
                     }
                     
                     loadedCount++
                     if (loadedCount == goalIds.size) {
                         findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format(Locale.getDefault(), "₱%.2f", totalQuestSaved)
-                        lastIncompleteGoal?.let { updateGoalPreview(it) } ?: run {
-                            findViewById<TextView>(R.id.tvPreviewGoalName).text = "NO ACTIVE QUESTS"
-                            findViewById<ProgressBar>(R.id.previewGoalProgress).progress = 0
+                        container.removeAllViews()
+                        if (incompleteGoals.isEmpty()) {
+                            addEmptyQuestMessage(container)
+                        } else {
+                            val displayGoals = incompleteGoals.sortedByDescending {
+                                if (it.targetGold > 0) it.savedGold / it.targetGold else 0.0
+                            }.take(5)
+                            for (goal in displayGoals) {
+                                addGoalPreviewItem(container, goal)
+                            }
                         }
                     }
                 }
@@ -202,10 +211,67 @@ class DashboardActivity : ComponentActivity() {
         }
     }
 
-    private fun updateGoalPreview(goal: Goal) {
-        findViewById<TextView>(R.id.tvPreviewGoalName).text = goal.name.uppercase()
+    private fun addEmptyQuestMessage(container: LinearLayout) {
+        val item = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundResource(R.drawable.bg_panel)
+            setPadding(48, 48, 48, 48)
+        }
+        val label = TextView(this).apply {
+            text = "NO ACTIVE QUESTS"
+            textSize = 8f
+            typeface = androidx.core.content.res.ResourcesCompat.getFont(this@DashboardActivity, R.font.press_start_2p)
+            setTextColor(getColor(R.color.text_dark))
+            gravity = android.view.Gravity.CENTER
+        }
+        item.addView(label)
+        container.addView(item)
+    }
+
+    private fun addGoalPreviewItem(container: LinearLayout, goal: Goal) {
+        val item = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundResource(R.drawable.bg_panel)
+            setPadding(48, 36, 48, 36)
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            params.bottomMargin = 16
+            layoutParams = params
+            setOnClickListener { startActivity(Intent(this@DashboardActivity, GoalsActivity::class.java)) }
+        }
+        val nameLabel = TextView(this).apply {
+            text = goal.name.uppercase()
+            textSize = 8f
+            typeface = androidx.core.content.res.ResourcesCompat.getFont(this@DashboardActivity, R.font.press_start_2p)
+            setTextColor(getColor(R.color.text_dark))
+        }
         val progress = if (goal.targetGold > 0) (goal.savedGold / goal.targetGold * 100).toInt() else 0
-        findViewById<ProgressBar>(R.id.previewGoalProgress).progress = progress
+        val progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 36
+            ).apply { topMargin = 20 }
+            max = 100
+            this.progress = progress
+            progressDrawable = getDrawable(R.drawable.bg_xp_bar)
+        }
+        val statsLabel = TextView(this).apply {
+            text = "₱${goal.savedGold.toInt()} / ₱${goal.targetGold.toInt()}  ($progress%)"
+            textSize = 6f
+            typeface = androidx.core.content.res.ResourcesCompat.getFont(this@DashboardActivity, R.font.press_start_2p)
+            setTextColor(getColor(R.color.text_muted))
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            params.topMargin = 12
+            layoutParams = params
+        }
+        item.addView(nameLabel)
+        item.addView(progressBar)
+        item.addView(statsLabel)
+        container.addView(item)
     }
 
     private fun showAddBalanceDialog() {
