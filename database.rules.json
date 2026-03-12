@@ -1,6 +1,7 @@
 {
   "rules": {
     "users": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
       "$uid": {
         ".read": "auth != null",
         ".write": "auth != null && (auth.uid == $uid || root.child('admins').child(auth.uid).exists())",
@@ -119,12 +120,17 @@
     },
 
     "admins": {
-      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
+      ".read": "auth != null",
       "$uid": {
         ".write": "auth != null && root.child('admins').child(auth.uid).child('role').val() == 'super_admin'",
         "role": { ".validate": "newData.isString() && (newData.val() == 'admin' || newData.val() == 'super_admin')" },
         "email": { ".validate": "newData.isString()" }
       }
+    },
+
+    "game_config": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
     }
   }
 }

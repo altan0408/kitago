@@ -7,10 +7,10 @@ import java.util.*
 
 object DataManager {
     private var maxLevel = 50
-    private const val XP_PER_DEPOSIT = 50
-    private const val XP_PER_CONTRIBUTION = 100
+    private var XP_PER_DEPOSIT = 50
+    private var XP_PER_CONTRIBUTION = 100
     private const val XP_STREAK_BONUS = 250
-    private const val XP_GOAL_COMPLETED = 1500
+    private var XP_GOAL_COMPLETED = 1500
     private const val XP_COLLAB_STREAK_BONUS = 300
 
     fun getXpNeededForLevel(level: Int): Int = level * 750
@@ -278,6 +278,9 @@ object DataManager {
         FirebaseDatabase.getInstance().reference.child("game_config").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 maxLevel = snapshot.child("max_level").getValue(Int::class.java) ?: 50
+                XP_PER_DEPOSIT = snapshot.child("xp_per_deposit").getValue(Int::class.java) ?: 50
+                XP_PER_CONTRIBUTION = snapshot.child("xp_per_contribution").getValue(Int::class.java) ?: 100
+                XP_GOAL_COMPLETED = snapshot.child("xp_goal_completed").getValue(Int::class.java) ?: 1500
             }
             override fun onCancelled(error: DatabaseError) {}
         })

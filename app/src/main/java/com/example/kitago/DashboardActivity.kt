@@ -9,7 +9,6 @@ import android.widget.*
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.res.ResourcesCompat
-import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.util.*
@@ -19,21 +18,15 @@ class DashboardActivity : ComponentActivity() {
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var firebaseDatabase: FirebaseDatabase
     private lateinit var userRef: DatabaseReference
-    private var backPressedTime: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        // Prevent back button from going to Main Menu
+        // Show styled exit confirmation dialog on back press
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (System.currentTimeMillis() - backPressedTime < 2000) {
-                    finishAffinity() // Close the app entirely
-                } else {
-                    backPressedTime = System.currentTimeMillis()
-                    Toast.makeText(this@DashboardActivity, "PRESS BACK AGAIN TO EXIT", Toast.LENGTH_SHORT).show()
-                }
+                showExitConfirmDialog()
             }
         })
 
@@ -61,13 +54,18 @@ class DashboardActivity : ComponentActivity() {
         val uid = firebaseAuth.currentUser?.uid ?: return
         firebaseDatabase.reference.child("admins").child(uid).get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
-                // Add a small floating admin button or a badge next to username
+                // Show admin badge on username
                 val tvUsername = findViewById<TextView>(R.id.tvUsername)
-                tvUsername.text = "🛡️ " + tvUsername.text
-                tvUsername.setOnClickListener {
+                if (!tvUsername.text.startsWith("🛡️")) {
+                    tvUsername.text = "🛡️ " + tvUsername.text
+                }
+
+                // Show and wire the admin panel button
+                val btnAdmin = findViewById<ImageButton>(R.id.btnAdminPanel)
+                btnAdmin.visibility = View.VISIBLE
+                btnAdmin.setOnClickListener {
                     startActivity(Intent(this, AdminActivity::class.java))
                 }
-                Toast.makeText(this, "ADMIN ACCESS GRANTED", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -112,6 +110,9 @@ class DashboardActivity : ComponentActivity() {
         findViewById<LinearLayout>(R.id.goalPreviewItem).setOnClickListener {
             startActivity(Intent(this, GoalsActivity::class.java))
         }
+        findViewById<ImageButton>(R.id.btnSettings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
     }
 
     private fun observeUserData() {
@@ -131,8 +132,8 @@ class DashboardActivity : ComponentActivity() {
                     tvUser.text = username.uppercase()
                 }
                 
-                findViewById<TextView>(R.id.tvBalance).text = String.format("₱%.2f", balance)
-                
+                findViewById<TextView>(R.id.tvBalance).text = String.format(Locale.getDefault(), "₱%.2f", balance)
+
                 ImageUtils.loadProfileImage(this@DashboardActivity, profilePicUrl, findViewById(R.id.ivAvatar))
 
                 val expenses = snapshot.child("expense_totals")
@@ -187,7 +188,7 @@ class DashboardActivity : ComponentActivity() {
                     
                     loadedCount++
                     if (loadedCount == goalIds.size) {
-                        findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format("₱%.2f", totalQuestSaved)
+                        findViewById<TextView>(R.id.tvTotalSavedGoals).text = String.format(Locale.getDefault(), "₱%.2f", totalQuestSaved)
                         lastIncompleteGoal?.let { updateGoalPreview(it) } ?: run {
                             findViewById<TextView>(R.id.tvPreviewGoalName).text = "NO ACTIVE QUESTS"
                             findViewById<ProgressBar>(R.id.previewGoalProgress).progress = 0
@@ -224,6 +225,34 @@ class DashboardActivity : ComponentActivity() {
                 DataManager.syncUpdateBalance(amountStr.toDouble(), true) { dialog.dismiss() }
             }
         }
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun showExitConfirmDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_game_message, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).setCancelable(true).create()
+
+        dialogView.findViewById<TextView>(R.id.tvDialogTitle).text = "EXIT GAME?"
+        dialogView.findViewById<TextView>(R.id.tvDialogMessage).text = "ARE YOU SURE YOU\nWANT TO LEAVE?"
+
+        dialogView.findViewById<TextView>(R.id.btnDialogOk).apply {
+            text = "EXIT"
+            setBackgroundResource(R.drawable.bg_button_orange)
+            setOnClickListener { dialog.dismiss(); finishAffinity() }
+        }
+
+        val btnCancel = TextView(this).apply {
+            text = "CANCEL"
+            typeface = ResourcesCompat.getFont(this@DashboardActivity, R.font.press_start_2p)
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setPadding(0, 30, 0, 30)
+            setTextColor(getColor(R.color.text_muted))
+            setOnClickListener { dialog.dismiss() }
+        }
+        (dialogView as LinearLayout).addView(btnCancel)
+
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
