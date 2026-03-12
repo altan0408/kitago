@@ -73,23 +73,39 @@ class SignupActivity : ComponentActivity() {
             val confirmPassword = etConfirmPassword.text.toString().trim()
 
             if (validateFields(username, email, password, confirmPassword)) {
+                btnSignUp.isEnabled = false
+                btnSignUp.text = "CREATING..."
+
                 // Check if username is taken first
                 val cleanName = username.lowercase().replace(" ", "_")
-                firebaseDatabase.reference.child("usernames").child(cleanName).get().addOnSuccessListener { snapshot ->
-                    if (snapshot.exists()) {
-                        Toast.makeText(this, "USERNAME ALREADY TAKEN!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        firebaseAuth.createUserWithEmailAndPassword(email, password)
-                            .addOnCompleteListener(this) { task ->
-                                if (task.isSuccessful) {
-                                    val userId = firebaseAuth.currentUser?.uid ?: return@addOnCompleteListener
-                                    saveUserToDatabase(userId, username, email, "")
-                                } else {
-                                    Toast.makeText(this, "Sign up failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                firebaseDatabase.reference.child("usernames").child(cleanName).get()
+                    .addOnSuccessListener { snapshot ->
+                        if (snapshot.exists()) {
+                            Toast.makeText(this, "USERNAME ALREADY TAKEN!", Toast.LENGTH_SHORT).show()
+                            btnSignUp.isEnabled = true
+                            btnSignUp.text = "SIGN UP"
+                        } else {
+                            firebaseAuth.createUserWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(this) { task ->
+                                    if (task.isSuccessful) {
+                                        val userId = firebaseAuth.currentUser?.uid ?: return@addOnCompleteListener
+                                        saveUserToDatabase(userId, username, email, "")
+                                    } else {
+                                        btnSignUp.isEnabled = true
+                                        btnSignUp.text = "SIGN UP"
+                                        Toast.makeText(this, "Sign up failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                    }
                                 }
-                            }
+                        }
                     }
-                }
+                    .addOnFailureListener { e ->
+                        btnSignUp.isEnabled = true
+                        btnSignUp.text = "SIGN UP"
+                        Log.e("SignupActivity", "Database error: ${e.message}")
+                        // Note: If this fails with "Permission Denied", you must update your Firebase Rules
+                        // to allow public read on the "usernames" node.
+                        Toast.makeText(this, "Error checking username. Check internet or permissions.", Toast.LENGTH_LONG).show()
+                    }
             }
         }
 
@@ -136,6 +152,12 @@ class SignupActivity : ComponentActivity() {
         }
         if (user.length > 30) {
             Toast.makeText(this, "Username too long (max 30)", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        // Firebase keys cannot contain these characters
+        val invalidChars = listOf(".", "#", "$", "[", "]")
+        if (invalidChars.any { user.contains(it) }) {
+            Toast.makeText(this, "Username cannot contain . # $ [ ]", Toast.LENGTH_SHORT).show()
             return false
         }
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -198,12 +220,18 @@ class SignupActivity : ComponentActivity() {
         val cleanName = username.lowercase().replace(" ", "_")
         
         // Save user data and update lookup index
-        userRef.setValue(userData).addOnCompleteListener {
-            usernamesRef.child(cleanName).setValue(userId).addOnCompleteListener {
-                val intent = Intent(this, DashboardActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
+        userRef.setValue(userData).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                usernamesRef.child(cleanName).setValue(userId).addOnCompleteListener {
+                    val intent = Intent(this, DashboardActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+            } else {
+                findViewById<TextView>(R.id.btnSignUp).isEnabled = true
+                findViewById<TextView>(R.id.btnSignUp).text = "SIGN UP"
+                Toast.makeText(this, "Database error: ${task.exception?.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
